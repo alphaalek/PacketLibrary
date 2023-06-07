@@ -5,20 +5,21 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import me.alek.packetlibrary.PluginTest;
+import me.alek.packetlibrary.api.packet.PacketProcessor;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
-import me.alek.packetlibrary.processor.InternalPacketProcessor;
+import me.alek.packetlibrary.wrappers.WrappedPacket;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
-public class PlayerChannelHandler extends ChannelDuplexHandler {
+public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
 
-    private Player player;
+    private volatile Player player;
 
-    public PlayerChannelHandler(Player player) {
+    public PlayerChannelDuplexHandler(Player player) {
         this.player = player;
     }
 
-    public PlayerChannelHandler() {
+    public PlayerChannelDuplexHandler() {
 
     }
 
@@ -28,14 +29,13 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
-        InternalPacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
-        PacketContainer packetContainer = packetProcessor.read(ctx.channel(), player, packet);
+        PacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
+        PacketContainer<? extends WrappedPacket> packetContainer = packetProcessor.read(ctx.channel(), player, packet);
 
         if (packetContainer == null) {
             return;
         }
-        super.channelRead(ctx, packetContainer);
-        Bukkit.getLogger().info(packet.toString());
+        super.channelRead(ctx, packetContainer.getHandle());
     }
 
     @Override
@@ -44,13 +44,12 @@ public class PlayerChannelHandler extends ChannelDuplexHandler {
             super.write(ctx, packet, promise);
             return;
         }
-        InternalPacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
-        PacketContainer packetContainer = packetProcessor.write(ctx.channel(), player, packet);
+        PacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
+        PacketContainer<? extends WrappedPacket> packetContainer = packetProcessor.write(ctx.channel(), player, packet);
 
         if (packetContainer == null) {
             return;
         }
-        super.write(ctx, packetContainer, promise);
-        Bukkit.getLogger().info(packet.toString());
+        super.write(ctx, packetContainer.getHandle(), promise);
     }
 }

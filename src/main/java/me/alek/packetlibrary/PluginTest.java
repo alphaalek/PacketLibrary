@@ -1,5 +1,6 @@
 package me.alek.packetlibrary;
 
+import me.alek.packetlibrary.example.PositionModule;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PluginTest extends JavaPlugin {
@@ -10,7 +11,8 @@ public class PluginTest extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        packetLibrary = new PacketLibrary(null);
+        packetLibrary = new PacketLibrary(new PacketLibrarySettings());
+        new PositionModule();
     }
 
     public static PluginTest get() {

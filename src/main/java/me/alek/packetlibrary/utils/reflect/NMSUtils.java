@@ -1,4 +1,4 @@
-package me.alek.packetlibrary.utils;
+package me.alek.packetlibrary.utils.reflect;
 
 import io.netty.channel.Channel;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
@@ -9,10 +9,10 @@ import java.util.UUID;
 
 public class NMSUtils {
 
-    private static final Class<Object> entityPlayerClass = Reflection.getClass("{nms}.EntityPlayer");
-    private static final Class<Object> playerConnectionClass = Reflection.getClass("{nms}.PlayerConnection");
-    private static final Class<Object> networkManagerClass = Reflection.getClass("{nms}.NetworkManager");
-    private static final Reflection.MethodInvoker getHandle = Reflection.getMethod(
+    private static final Class<?> entityPlayerClass = Reflection.getClass("{nms}.EntityPlayer");
+    private static final Class<?> playerConnectionClass = Reflection.getClass("{nms}.PlayerConnection");
+    private static final Class<?> networkManagerClass = Reflection.getClass("{nms}.NetworkManager");
+    private static final MethodInvoker getHandle = Reflection.getMethod(
             CraftPlayer.class, "getHandle", entityPlayerClass);
     private static final Reflection.FieldAccessor<Object> playerConnection = Reflection.getField(
             entityPlayerClass, "playerConnection", playerConnectionClass);

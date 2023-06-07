@@ -1,11 +1,13 @@
-package me.alek.packetlibrary.utils;
+package me.alek.packetlibrary.utils.reflect;
 
+import me.alek.packetlibrary.utils.protocol.Protocol;
 import org.bukkit.Bukkit;
-import sun.reflect.FieldAccessor;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,23 +59,25 @@ public class Reflection {
         }
     }
 
-    public static class MethodInvoker {
-
-        private final Method method;
-
-        public MethodInvoker(Method method) {
-            this.method = method;
+    static {
+        boolean newProtocol = Protocol.getProtocol().isNewerThanOrEqual(Protocol.v1_17);
+        Bukkit.getLogger().info("NEW PROTOCL: " + newProtocol);
+        if (newProtocol) {
+            NEW_PROTOCOL_STATES = new HashMap<String, String>(){{
+                put("PacketHandshaking", "handshake");
+                put("PacketStatus", "status");
+                put("PacketPlay", "game");
+                put("PacketLogin", "login");
+            }};
         }
-
-        public Object invoke(Object object, Object... parameters) {
-            try {
-                return method.invoke(object, parameters);
-            } catch (Exception ex) {
-                throw new RuntimeException("Reflection fejl");
-            }
+        else {
+            NEW_PROTOCOL_STATES = null;
         }
+        USE_NEW_NMS_PROTOCOL = newProtocol;
     }
 
+    private static final boolean USE_NEW_NMS_PROTOCOL;
+    private static final HashMap<String, String> NEW_PROTOCOL_STATES;
     private static final String OBC_PREFIX = Bukkit.getServer().getClass()
             .getPackage().getName();
     private static final String NMS_PREFIX = OBC_PREFIX.replace(
@@ -82,13 +86,38 @@ public class Reflection {
             "org.bukkit.craftbukkit", "").replace(".", "");
     private static final Pattern MATCH_VARIABLE = Pattern.compile("\\{([^\\}]+)\\}");
 
-    public static <T> Class<T> getClass(String name) {
+    public static Class<?> getSubClass(Class<?> superClass, String name) {
+        if (superClass == null) {
+            throw new RuntimeException("Reflection fejl");
+        }
+        for (Class<?> subClass : superClass.getDeclaredClasses()) {
+            if (subClass.getSimpleName().equals(name)) {
+                return subClass;
+            }
+        }
+        throw new RuntimeException("Reflection fejl");
+    }
+
+    public static Class<?> getSubClass(String superClass, String name) {
+        return getSubClass(getClass(superClass), name);
+    }
+
+    public static Class<?> getClassWithException(String name) throws Exception {
+        return getCanonicalClassWithException(setPlaceholders(name));
+    }
+
+    public static Class<?> getClass(String name) {
         return getCanonicalClass(setPlaceholders(name));
     }
 
-    public static <T> Class<T> getCanonicalClass(String name) {
+    public static Class<?> getCanonicalClassWithException(String name) throws Exception {
+        return Class.forName(name);
+    }
+
+    public static Class<?> getCanonicalClass(String name) {
         try {
-            return (Class<T>) Class.forName(name);
+            Bukkit.getLogger().info("CLASS: " + name);
+            return getCanonicalClassWithException(name);
         } catch (Exception ex) {
             throw new RuntimeException("Reflection fejl");
         }
@@ -101,7 +130,18 @@ public class Reflection {
             String variable = matcher.group(1);
             String replacement = "";
             if ("nms".equalsIgnoreCase(variable)) {
-                replacement = NMS_PREFIX;
+                if (USE_NEW_NMS_PROTOCOL) {
+                    for (Map.Entry<String, String> stateEntry : NEW_PROTOCOL_STATES.entrySet()) {
+
+                        if (name.contains(stateEntry.getKey())) {
+                            replacement = "net.minecraft.network.protocol." + stateEntry.getValue();
+                            break;
+                        }
+                    }
+                }
+                if (replacement.equals("")) {
+                    replacement = NMS_PREFIX;
+                }
             }
             else if ("obc".equalsIgnoreCase(variable)) {
                 replacement = OBC_PREFIX;
@@ -129,6 +169,10 @@ public class Reflection {
         } catch (Exception ex) {
             throw new RuntimeException("Reflection fejl");
         }
+    }
+
+    public static MethodInvoker getMethod(Method method) {
+        return new MethodInvoker(method);
     }
 
     public static MethodInvoker getMethod(String target, String name, Class<?>... parameters) {

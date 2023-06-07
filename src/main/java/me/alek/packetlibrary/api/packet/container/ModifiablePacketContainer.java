@@ -2,7 +2,8 @@ package me.alek.packetlibrary.api.packet.container;
 
 import me.alek.packetlibrary.api.packet.PacketModifier;
 
-public interface ModifiablePacketContainer {
+public interface ModifiablePacketContainer{
+
 
     PacketModifier<Double> getDoubles();
 
@@ -20,7 +21,7 @@ public interface ModifiablePacketContainer {
 
     PacketModifier<String> getStrings();
 
-    <T> PacketModifier<T> getObjects(Class<? extends T> target);
+    PacketModifier<Object> getObjects(Class<?> target);
 
     PacketModifier<Object> getFields();
 }

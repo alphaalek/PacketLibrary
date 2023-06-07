@@ -3,8 +3,8 @@ package me.alek.packetlibrary.injector;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import me.alek.packetlibrary.api.NettyInjector;
-import me.alek.packetlibrary.handler.PlayerChannelHandler;
-import me.alek.packetlibrary.utils.NMSUtils;
+import me.alek.packetlibrary.handler.PlayerChannelDuplexHandler;
+import me.alek.packetlibrary.utils.reflect.NMSUtils;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class LateChannelInjector implements NettyInjector {
 
         Channel channel = NMSUtils.getChannel(player);
         ChannelPipeline pipeline = channel.pipeline();
-        pipeline.addBefore("packet_handler", player.getName(), new PlayerChannelHandler(player));
+        pipeline.addBefore("packet_handler", player.getName(), new PlayerChannelDuplexHandler(player));
     }
 
     @Override
