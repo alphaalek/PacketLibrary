@@ -6,12 +6,12 @@ import me.alek.packetlibrary.injector.EarlyChannelInjector;
 import me.alek.packetlibrary.injector.LateChannelInjector;
 import me.alek.packetlibrary.api.NettyInjector;
 import me.alek.packetlibrary.listener.AsyncPacketAdapter;
-import me.alek.packetlibrary.packet.PacketType;
-import me.alek.packetlibrary.packet.PacketTypeEnum;
-import me.alek.packetlibrary.packet.cache.WrappedPacketFactory;
+import me.alek.packetlibrary.packet.type.PacketType;
+import me.alek.packetlibrary.packet.type.PacketTypeEnum;
+import me.alek.packetlibrary.packet.cache.PacketWrapperFactory;
 import me.alek.packetlibrary.processor.InternalPacketProcessor;
-import me.alek.packetlibrary.utils.AsyncFuture;
-import me.alek.packetlibrary.utils.protocol.Protocol;
+import me.alek.packetlibrary.utility.AsyncFuture;
+import me.alek.packetlibrary.utility.protocol.Protocol;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 import org.bukkit.Bukkit;
 
@@ -35,7 +35,7 @@ public class PacketLibrary {
         }
         internalPacketProcessor = new InternalPacketProcessor();
         AsyncFuture future = PacketType.load();
-        future.addListener(WrappedPacketFactory::load);
+        future.addListener(PacketWrapperFactory::load);
     }
 
     public NettyInjector getInjector() {
@@ -58,11 +58,19 @@ public class PacketLibrary {
         return internalPacketProcessor;
     }
 
-    public <WP extends WrappedPacket> void addListener(AsyncPacketAdapter<WP> adapter, PacketTypeEnum... packetTypes) {
+    public <WP extends WrappedPacket<WP>> void addListener(AsyncPacketAdapter<WP> adapter, PacketTypeEnum... packetTypes) {
         internalPacketProcessor.addListener(adapter, packetTypes);
     }
 
-    public <WP extends WrappedPacket> void addListener(AsyncPacketAdapter<WP> adapter, List<PacketTypeEnum> packetTypes) {
+    public <WP extends WrappedPacket<WP>> void addListener(AsyncPacketAdapter<WP> adapter, List<PacketTypeEnum> packetTypes) {
+        internalPacketProcessor.addListener(adapter, packetTypes);
+    }
+
+    public <WP extends WrappedPacket<?>> void addUnparameterizedListener(AsyncPacketAdapter<WP> adapter, PacketTypeEnum... packetTypes) {
+        internalPacketProcessor.addListener(adapter, packetTypes);
+    }
+
+    public <WP extends WrappedPacket<?>> void addUnparameterizedListener(AsyncPacketAdapter<WP> adapter, List<PacketTypeEnum> packetTypes) {
         internalPacketProcessor.addListener(adapter, packetTypes);
     }
 

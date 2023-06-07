@@ -1,7 +1,7 @@
-package me.alek.packetlibrary.utils.protocol;
+package me.alek.packetlibrary.utility.protocol;
 
 import me.alek.packetlibrary.PluginTest;
-import me.alek.packetlibrary.packet.RangedPacketTypeEnum;
+import me.alek.packetlibrary.packet.type.RangedPacketTypeEnum;
 import org.bukkit.Bukkit;
 
 import java.util.ArrayList;

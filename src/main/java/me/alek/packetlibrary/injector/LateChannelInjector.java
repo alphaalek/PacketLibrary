@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
 import me.alek.packetlibrary.api.NettyInjector;
 import me.alek.packetlibrary.handler.PlayerChannelDuplexHandler;
-import me.alek.packetlibrary.utils.reflect.NMSUtils;
+import me.alek.packetlibrary.utility.reflect.NMSUtils;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;

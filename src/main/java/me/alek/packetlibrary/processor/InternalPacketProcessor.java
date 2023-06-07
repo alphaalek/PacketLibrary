@@ -7,9 +7,12 @@ import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.api.packet.PacketProcessor;
 import me.alek.packetlibrary.listener.AsyncPacketAdapter;
 import me.alek.packetlibrary.packet.*;
-import me.alek.packetlibrary.utils.protocol.Protocol;
+import me.alek.packetlibrary.packet.type.PacketState;
+import me.alek.packetlibrary.packet.type.PacketType;
+import me.alek.packetlibrary.packet.type.PacketTypeEnum;
+import me.alek.packetlibrary.packet.type.RangedPacketTypeEnum;
+import me.alek.packetlibrary.utility.protocol.Protocol;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
-import me.alek.packetlibrary.wrappers.play.client.WrappedPlayInAbilities;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -19,28 +22,28 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InternalPacketProcessor implements PacketProcessor {
 
     private final ConcurrentHashMap<Object, PacketState> lookupPacketStates = new ConcurrentHashMap<>();
-    private final Map<Class<?>, ListModifier<? extends WrappedPacket>> packetAdapters = new HashMap<>();
+    private final Map<Class<?>, ListModifier<?>> packetAdapters = new HashMap<>();
 
-    private static class ListModifier<WP extends WrappedPacket> {
+    private static class ListModifier<WP extends WrappedPacket<WP>> {
 
         private final List<AsyncPacketAdapter<WP>> packetAdapters = new ArrayList<>();
 
-        public void call(PacketContainer<WP> packetContainer, boolean isRead) {
+        public void call(PacketContainer<?> packetContainer, boolean isRead) {
             for (AsyncPacketAdapter<WP> packetAdapter : packetAdapters) {
                 if (isRead) {
-                    packetAdapter.onPacketReceive(packetContainer);
+                    packetAdapter.onPacketReceive((PacketContainer<WP>) packetContainer);
                 }
                 else {
-                    packetAdapter.onPacketSend(packetContainer);
+                    packetAdapter.onPacketSend((PacketContainer<WP>) packetContainer);
                 }
             }
         }
 
-        public void addListener(AsyncPacketAdapter<WP> packetAdapter) {
-            packetAdapters.add(packetAdapter);
+        public void addListener(AsyncPacketAdapter<?> packetAdapter) {
+            packetAdapters.add((AsyncPacketAdapter<WP>) packetAdapter);
         }
 
-        public void removeListener(AsyncPacketAdapter<WP> packetAdapter) {
+        public void removeListener(AsyncPacketAdapter<?> packetAdapter) {
             packetAdapters.remove(packetAdapter);
         }
 
@@ -53,7 +56,7 @@ public class InternalPacketProcessor implements PacketProcessor {
         }
     }
 
-    public void addListener(AsyncPacketAdapter packetAdapter, List<PacketTypeEnum> packetTypes) {
+    public void addListener(AsyncPacketAdapter<?> packetAdapter, List<PacketTypeEnum> packetTypes) {
         for (PacketTypeEnum packetType : packetTypes) {
             if (packetType instanceof RangedPacketTypeEnum) {
                 if (!Protocol.protocolMatch((RangedPacketTypeEnum) packetType)) {
@@ -70,11 +73,15 @@ public class InternalPacketProcessor implements PacketProcessor {
         }
     }
 
-    public void addListener(AsyncPacketAdapter packetAdapter, PacketTypeEnum... packetTypes) {
+    public void addListener(AsyncPacketAdapter<?> packetAdapter, PacketTypeEnum... packetTypes) {
         addListener(packetAdapter, Arrays.asList(packetTypes));
     }
 
-    public void removeListener(AsyncPacketAdapter packetAdapter, PacketTypeEnum... packetTypes) {
+    public void removeListener(AsyncPacketAdapter<?> packetAdapter, PacketTypeEnum... packetTypes) {
+        removeListener(packetAdapter, Arrays.asList(packetTypes));
+    }
+
+    public void removeListener(AsyncPacketAdapter<?> packetAdapter, List<PacketTypeEnum> packetTypes) {
         for (PacketTypeEnum packetType : packetTypes) {
             packetAdapters.get(packetType.getNmsClass()).removeListener(packetAdapter);
             if (packetAdapters.get(packetType.getNmsClass()).isEmpty()) {
@@ -99,7 +106,7 @@ public class InternalPacketProcessor implements PacketProcessor {
         return !packetAdapters.get(clazz).isEmpty();
     }
 
-    public void callListeners(Class<?> clazz, PacketContainer packetContainer, boolean isRead) {
+    public void callListeners(Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead) {
         if (!hasListener(clazz)) {
             return;
         }
@@ -107,12 +114,12 @@ public class InternalPacketProcessor implements PacketProcessor {
     }
 
     @Override
-    public PacketContainer<? extends WrappedPacket> read(Channel channel, Player player, Object packet) {
+    public PacketContainer<? extends WrappedPacket<?>> read(Channel channel, Player player, Object packet) {
         final PacketState packetState = getPacketState(player, packet);
         if (packetState == PacketState.UNKNOWN) {
             return null;
         }
-        final InternalPacketContainer<? extends WrappedPacket> packetContainer = new InternalPacketContainer<>(
+        final InternalPacketContainer<? extends WrappedPacket<?>> packetContainer = new InternalPacketContainer<>(
                 packet, PacketType.getPacketType(packet.getClass())
         );
         callListeners(packet.getClass(), packetContainer, true);
@@ -143,14 +150,13 @@ public class InternalPacketProcessor implements PacketProcessor {
     }
 
     @Override
-    public PacketContainer<? extends WrappedPacket> write(Channel channel, Player player, Object packet) {
+    public PacketContainer<? extends WrappedPacket<?>> write(Channel channel, Player player, Object packet) {
         final PacketState packetState = getPacketState(player, packet);
         if (packetState == PacketState.UNKNOWN) {
             return null;
         }
-        final InternalPacketContainer<? extends WrappedPacket> packetContainer = new InternalPacketContainer<>(
-                packet, PacketType.Status.Server.PING_RESPONSE, new WrappedPlayInAbilities(packet)//PacketType.getPacketType(packet.getClass())
-        );
+        final InternalPacketContainer<? extends WrappedPacket<?>> packetContainer = new InternalPacketContainer<>(
+                packet, PacketType.Status.Server.PING_RESPONSE);
         callListeners(packet.getClass(), packetContainer, false);
 
         PacketEvent packetEvent = null;
@@ -208,27 +214,27 @@ public class InternalPacketProcessor implements PacketProcessor {
         return packetState;
     }
 
-    public <WP extends WrappedPacket> void processHandshakeReceiveInternal(PacketContainer<WP> packetContainer) {
+    public <WP extends WrappedPacket<WP>> void processHandshakeReceiveInternal(PacketContainer<WP> packetContainer) {
     }
 
-    public <WP extends WrappedPacket> void processHandshakeSendInternal(PacketContainer<WP> packetContainer) {
+    public <WP extends WrappedPacket<WP>> void processHandshakeSendInternal(PacketContainer<WP> packetContainer) {
     }
 
-    public <WP extends WrappedPacket> void processStatusReceiveInternal(PacketContainer<WP> packetContainer) {
+    public <WP extends WrappedPacket<WP>> void processStatusReceiveInternal(PacketContainer<WP> packetContainer) {
     }
 
-    public <WP extends WrappedPacket> void processStatusSendInternal(PacketContainer<WP> packetContainer) {
+    public <WP extends WrappedPacket<WP>> void processStatusSendInternal(PacketContainer<WP> packetContainer) {
     }
 
-    public <WP extends WrappedPacket> void processLoginReceiveInternal(PacketContainer<WP> packetContainer) {
+    public <WP extends WrappedPacket<WP>> void processLoginReceiveInternal(PacketContainer<WP> packetContainer) {
     }
 
-    public <WP extends WrappedPacket> void processLoginSendInternal(PacketContainer<WP> packetContainer) {
+    public <WP extends WrappedPacket<WP>> void processLoginSendInternal(PacketContainer<WP> packetContainer) {
     }
 
-    public <WP extends WrappedPacket> void processPlayReceiveInternal(PacketContainer<WP> packetContainer) {
+    public <WP extends WrappedPacket<WP>> void processPlayReceiveInternal(PacketContainer<WP> packetContainer) {
     }
 
-    public <WP extends WrappedPacket> void processPlaySendInternal(PacketContainer<WP> packetContainer) {
+    public <WP extends WrappedPacket<WP>> void processPlaySendInternal(PacketContainer<WP> packetContainer) {
     }
 }

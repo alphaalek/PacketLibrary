@@ -1,9 +1,9 @@
-package me.alek.packetlibrary.packet;
+package me.alek.packetlibrary.packet.type;
 
-import me.alek.packetlibrary.utils.AsyncFuture;
-import me.alek.packetlibrary.utils.reflect.Reflection;
-import me.alek.packetlibrary.utils.protocol.Protocol;
-import me.alek.packetlibrary.utils.protocol.ProtocolRange;
+import me.alek.packetlibrary.utility.AsyncFuture;
+import me.alek.packetlibrary.utility.reflect.Reflection;
+import me.alek.packetlibrary.utility.protocol.Protocol;
+import me.alek.packetlibrary.utility.protocol.ProtocolRange;
 import org.bukkit.Bukkit;
 
 import java.util.*;

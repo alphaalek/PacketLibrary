@@ -1,4 +1,4 @@
-package me.alek.packetlibrary.utils.reflect;
+package me.alek.packetlibrary.utility.reflect;
 
 import java.lang.reflect.Method;
 

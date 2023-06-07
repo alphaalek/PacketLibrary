@@ -1,4 +1,4 @@
-package me.alek.packetlibrary.utils.reflect;
+package me.alek.packetlibrary.utility.reflect;
 
 import io.netty.channel.Channel;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;

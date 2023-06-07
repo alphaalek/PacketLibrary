@@ -1,4 +1,4 @@
-package me.alek.packetlibrary.utils;
+package me.alek.packetlibrary.utility;
 
 import java.util.ArrayList;
 import java.util.Arrays;

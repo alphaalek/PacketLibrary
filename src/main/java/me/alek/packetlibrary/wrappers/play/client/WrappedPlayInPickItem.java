@@ -1,10 +1,11 @@
 package me.alek.packetlibrary.wrappers.play.client;
 
+import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 
-public class WrappedPlayInPickItem extends WrappedPacket {
+public class WrappedPlayInPickItem extends WrappedPacket<WrappedPlayInPickItem> {
 
-    public WrappedPlayInPickItem(Object rawPacket) {
-        super(rawPacket);
+    public WrappedPlayInPickItem(Object rawPacket, PacketContainer<WrappedPlayInPickItem> packetContainer) {
+        super(rawPacket, packetContainer);
     }
 }

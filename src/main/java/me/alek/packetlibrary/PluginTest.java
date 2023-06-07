@@ -1,5 +1,6 @@
 package me.alek.packetlibrary;
 
+import me.alek.packetlibrary.example.FloodModule;
 import me.alek.packetlibrary.example.PositionModule;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,6 +14,7 @@ public class PluginTest extends JavaPlugin {
         instance = this;
         packetLibrary = new PacketLibrary(new PacketLibrarySettings());
         new PositionModule();
+        new FloodModule();
     }
 
     public static PluginTest get() {

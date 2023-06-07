@@ -1,6 +1,6 @@
-package me.alek.packetlibrary.utils.reflect;
+package me.alek.packetlibrary.utility.reflect;
 
-import me.alek.packetlibrary.utils.protocol.Protocol;
+import me.alek.packetlibrary.utility.protocol.Protocol;
 import org.bukkit.Bukkit;
 
 import java.lang.reflect.Constructor;

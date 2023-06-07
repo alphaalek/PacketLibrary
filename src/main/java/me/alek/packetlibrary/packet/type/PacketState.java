@@ -1,4 +1,4 @@
-package me.alek.packetlibrary.packet;
+package me.alek.packetlibrary.packet.type;
 
 public enum PacketState {
     HANDSHAKE,

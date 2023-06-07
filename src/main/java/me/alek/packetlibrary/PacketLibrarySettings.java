@@ -1,6 +1,6 @@
 package me.alek.packetlibrary;
 
-import me.alek.packetlibrary.utils.protocol.Protocol;
+import me.alek.packetlibrary.utility.protocol.Protocol;
 
 public class PacketLibrarySettings {
 

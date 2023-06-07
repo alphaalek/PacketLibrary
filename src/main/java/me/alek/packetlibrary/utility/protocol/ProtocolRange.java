@@ -1,4 +1,4 @@
-package me.alek.packetlibrary.utils.protocol;
+package me.alek.packetlibrary.utility.protocol;
 
 public class ProtocolRange {
 

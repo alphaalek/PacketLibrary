@@ -2,10 +2,12 @@ package me.alek.packetlibrary.packet;
 
 import me.alek.packetlibrary.api.packet.PacketModifier;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
-import me.alek.packetlibrary.packet.cache.WrappedPacketCache;
+import me.alek.packetlibrary.packet.cache.PacketWrapperCache;
+import me.alek.packetlibrary.packet.type.PacketState;
+import me.alek.packetlibrary.packet.type.PacketTypeEnum;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 
-public class InternalPacketContainer<WP extends WrappedPacket> implements PacketContainer<WP> {
+public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements PacketContainer<WP> {
 
     private final PacketTypeEnum type;
     private final Object handle;
@@ -15,7 +17,9 @@ public class InternalPacketContainer<WP extends WrappedPacket> implements Packet
             Object rawPacket,
             PacketTypeEnum type
     ) {
-        this(rawPacket, type, (WP) WrappedPacketCache.getWrapper(type, rawPacket));
+        this.wrappedPacket = (WP) PacketWrapperCache.getWrapper(type, rawPacket, this);
+        this.type = type;
+        this.handle = rawPacket;
     }
 
     public InternalPacketContainer(
