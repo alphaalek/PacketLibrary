@@ -28,13 +28,13 @@ public class InternalPacketProcessor implements PacketProcessor {
 
         private final List<AsyncPacketAdapter<WP>> packetAdapters = new ArrayList<>();
 
-        public void call(PacketContainer<?> packetContainer, boolean isRead) {
+        public void call(Player player, PacketContainer<?> packetContainer, boolean isRead) {
             for (AsyncPacketAdapter<WP> packetAdapter : packetAdapters) {
                 if (isRead) {
-                    packetAdapter.onPacketReceive((PacketContainer<WP>) packetContainer);
+                    packetAdapter.onPacketReceive(player, (PacketContainer<WP>) packetContainer);
                 }
                 else {
-                    packetAdapter.onPacketSend((PacketContainer<WP>) packetContainer);
+                    packetAdapter.onPacketSend(player, (PacketContainer<WP>) packetContainer);
                 }
             }
         }
@@ -106,11 +106,11 @@ public class InternalPacketProcessor implements PacketProcessor {
         return !packetAdapters.get(clazz).isEmpty();
     }
 
-    public void callListeners(Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead) {
+    public void callListeners(Player player, Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead) {
         if (!hasListener(clazz)) {
             return;
         }
-        packetAdapters.get(clazz).call(packetContainer, isRead);
+        packetAdapters.get(clazz).call(player, packetContainer, isRead);
     }
 
     @Override
@@ -122,7 +122,7 @@ public class InternalPacketProcessor implements PacketProcessor {
         final InternalPacketContainer<? extends WrappedPacket<?>> packetContainer = new InternalPacketContainer<>(
                 packet, PacketType.getPacketType(packet.getClass())
         );
-        callListeners(packet.getClass(), packetContainer, true);
+        callListeners(player, packet.getClass(), packetContainer, true);
 
         PacketEvent packetEvent = null;
         switch (packetState) {
@@ -151,13 +151,14 @@ public class InternalPacketProcessor implements PacketProcessor {
 
     @Override
     public PacketContainer<? extends WrappedPacket<?>> write(Channel channel, Player player, Object packet) {
+
         final PacketState packetState = getPacketState(player, packet);
         if (packetState == PacketState.UNKNOWN) {
             return null;
         }
         final InternalPacketContainer<? extends WrappedPacket<?>> packetContainer = new InternalPacketContainer<>(
-                packet, PacketType.Status.Server.PING_RESPONSE);
-        callListeners(packet.getClass(), packetContainer, false);
+                packet, null);//PacketType.Status.Server.PING_RESPONSE);
+        callListeners(player, packet.getClass(), packetContainer, false);
 
         PacketEvent packetEvent = null;
         switch (getPacketState(player, packet)) {

@@ -4,7 +4,7 @@ import me.alek.packetlibrary.packet.type.PacketState;
 import me.alek.packetlibrary.packet.type.PacketTypeEnum;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 
-public interface PacketContainer<WP extends WrappedPacket> extends ModifiablePacketContainer {
+public interface PacketContainer<WP extends WrappedPacket<WP>> extends ModifiablePacketContainer {
 
     PacketTypeEnum getType();
 

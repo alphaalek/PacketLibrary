@@ -13,35 +13,6 @@ import java.util.regex.Pattern;
 
 public class Reflection {
 
-    static class FieldAccessor<T> {
-
-        private final Field field;
-
-        public FieldAccessor(Field field) {
-            this.field = field;
-        }
-
-        public T get(Object object) {
-            try {
-                return (T) field.get(object);
-            } catch (Exception ex) {
-                throw new RuntimeException("Reflection fejl");
-            }
-        }
-
-        public void set(Object object, T value) {
-            try {
-                field.set(object, value);
-            } catch (Exception ex) {
-                throw new RuntimeException("Reflection fejl");
-            }
-        }
-
-        public boolean has(Object object) {
-            return field.getDeclaringClass().isAssignableFrom(object.getClass());
-        }
-    }
-
     public static class ConstructorInvoker<T> {
 
         private final Constructor<T> constructor;

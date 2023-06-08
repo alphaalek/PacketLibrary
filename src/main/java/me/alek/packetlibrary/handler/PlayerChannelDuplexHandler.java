@@ -30,7 +30,7 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
         PacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
-        PacketContainer<? extends WrappedPacket> packetContainer = packetProcessor.read(ctx.channel(), player, packet);
+        PacketContainer<? extends WrappedPacket<?>> packetContainer = packetProcessor.read(ctx.channel(), player, packet);
 
         if (packetContainer == null) {
             return;
@@ -44,12 +44,13 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
             super.write(ctx, packet, promise);
             return;
         }
-        PacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
-        PacketContainer<? extends WrappedPacket> packetContainer = packetProcessor.write(ctx.channel(), player, packet);
+        /*PacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
+        PacketContainer<? extends WrappedPacket<?>> packetContainer = packetProcessor.write(ctx.channel(), player, packet);
 
         if (packetContainer == null) {
             return;
         }
-        super.write(ctx, packetContainer.getHandle(), promise);
+        super.write(ctx, packetContainer.getHandle(), promise);*/
+        super.write(ctx, packet, promise);
     }
 }

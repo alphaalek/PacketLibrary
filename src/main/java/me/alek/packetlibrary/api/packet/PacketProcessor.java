@@ -23,5 +23,5 @@ public interface PacketProcessor {
 
     void addListener(AsyncPacketAdapter<?> packetAdapter, List<PacketTypeEnum> packetType);
 
-    void callListeners(Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead);
+    void callListeners(Player player, Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead);
 }

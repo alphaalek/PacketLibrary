@@ -2,14 +2,15 @@ package me.alek.packetlibrary.listener;
 
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
+import org.bukkit.entity.Player;
 
-public class UnparameterizedPacketAdapter extends AsyncPacketAdapter<WrappedPacket<?>> {
+public class UnparameterizedPacketAdapter extends AsyncPacketAdapter {
 
-    public void onPacketReceive(PacketContainer<WrappedPacket<?>> packetContainer) {
+    public void onPacketReceive(Player player, PacketContainer packetContainer) {
 
     }
 
-    public void onPacketSend(PacketContainer<WrappedPacket<?>> packetContainer) {
+    public void onPacketSend(Player player, PacketContainer packetContainer) {
 
     }
 }

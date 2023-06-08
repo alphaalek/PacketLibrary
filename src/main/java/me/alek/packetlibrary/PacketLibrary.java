@@ -66,11 +66,11 @@ public class PacketLibrary {
         internalPacketProcessor.addListener(adapter, packetTypes);
     }
 
-    public <WP extends WrappedPacket<?>> void addUnparameterizedListener(AsyncPacketAdapter<WP> adapter, PacketTypeEnum... packetTypes) {
+    public void addUnparameterizedListener(AsyncPacketAdapter<?> adapter, PacketTypeEnum... packetTypes) {
         internalPacketProcessor.addListener(adapter, packetTypes);
     }
 
-    public <WP extends WrappedPacket<?>> void addUnparameterizedListener(AsyncPacketAdapter<WP> adapter, List<PacketTypeEnum> packetTypes) {
+    public void addUnparameterizedListener(AsyncPacketAdapter<?> adapter, List<PacketTypeEnum> packetTypes) {
         internalPacketProcessor.addListener(adapter, packetTypes);
     }
 

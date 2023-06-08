@@ -6,6 +6,7 @@ import me.alek.packetlibrary.listener.AsyncPacketAdapter;
 import me.alek.packetlibrary.packet.type.PacketType;
 import me.alek.packetlibrary.wrappers.play.client.WrappedPlayInPosition;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 
 public class PositionModule extends AsyncPacketAdapter<WrappedPlayInPosition> {
 
@@ -14,7 +15,8 @@ public class PositionModule extends AsyncPacketAdapter<WrappedPlayInPosition> {
     }
 
     @Override
-    public void onPacketReceive(PacketContainer<WrappedPlayInPosition> packet) {
-        Bukkit.broadcastMessage("§6packet received! " + packet.getPacket() + " " + packet.getType());
+    public void onPacketReceive(Player player, PacketContainer<WrappedPlayInPosition> packet) {
+        Bukkit.broadcastMessage("§6packet received! "
+                + packet.getDoubles().read(0) + " " + packet.getDoubles().read(1) + " " + packet.getDoubles().read(2));
     }
 }

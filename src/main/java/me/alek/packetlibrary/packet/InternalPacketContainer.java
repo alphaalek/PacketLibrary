@@ -1,8 +1,10 @@
 package me.alek.packetlibrary.packet;
 
 import me.alek.packetlibrary.api.packet.PacketModifier;
+import me.alek.packetlibrary.api.packet.PacketStructure;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.packet.cache.PacketWrapperCache;
+import me.alek.packetlibrary.packet.structure.PacketStructureCache;
 import me.alek.packetlibrary.packet.type.PacketState;
 import me.alek.packetlibrary.packet.type.PacketTypeEnum;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
@@ -12,24 +14,22 @@ public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements Pa
     private final PacketTypeEnum type;
     private final Object handle;
     private final WP wrappedPacket;
+    private final PacketStructure<Object> packetStructure;
 
     public InternalPacketContainer(
             Object rawPacket,
             PacketTypeEnum type
     ) {
-        this.wrappedPacket = (WP) PacketWrapperCache.getWrapper(type, rawPacket, this);
+        if (type == null) {
+            this.wrappedPacket = null;
+            this.packetStructure = null;
+        }
+        else {
+            this.wrappedPacket = (WP) PacketWrapperCache.getWrapper(type, rawPacket, this);
+            this.packetStructure = PacketStructureCache.getStructure(type);
+        }
         this.type = type;
         this.handle = rawPacket;
-    }
-
-    public InternalPacketContainer(
-            Object rawPacket,
-            PacketTypeEnum type,
-            WP wrappedPacket
-    ) {
-        this.type = type;
-        this.handle = rawPacket;
-        this.wrappedPacket = wrappedPacket;
     }
 
     @Override
@@ -54,51 +54,47 @@ public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements Pa
 
     @Override
     public PacketModifier<Double> getDoubles() {
-        return null;
+        return packetStructure.withType(double.class).withTarget(handle);
     }
 
     @Override
     public PacketModifier<Long> getLongs() {
-        return null;
+        return packetStructure.withType(long.class).withTarget(handle);
     }
 
     @Override
     public PacketModifier<Integer> getInts() {
-        return null;
+        return packetStructure.withType(int.class).withTarget(handle);
     }
 
     @Override
     public PacketModifier<Short> getShorts() {
-        return null;
+        return packetStructure.withType(short.class).withTarget(handle);
     }
 
     @Override
     public PacketModifier<Float> getFloats() {
-        return null;
+        return packetStructure.withType(float.class).withTarget(handle);
     }
 
     @Override
     public PacketModifier<Byte> getBytes() {
-        return null;
+        return packetStructure.withType(byte.class).withTarget(handle);
     }
 
     @Override
     public PacketModifier<Boolean> getBooleans() {
-        return null;
+        return packetStructure.withType(boolean.class).withTarget(handle);
     }
 
     @Override
     public PacketModifier<String> getStrings() {
-        return null;
+        return packetStructure.withType(String.class).withTarget(handle);
     }
 
     @Override
     public PacketModifier<Object> getObjects(Class<?> target) {
-        return null;
+        return packetStructure.withTarget(handle);
     }
 
-    @Override
-    public PacketModifier<Object> getFields() {
-        return null;
-    }
 }

@@ -21,7 +21,6 @@ public class PacketWrapperCache {
         return WRAPPER_CACHE.computeIfAbsent(type, packetType -> {
             Class<?> nmsClass = packetType.getNmsClass();
 
-            Bukkit.getLogger().info("CACHE CREATE: " + nmsClass.toString());
             return PacketWrapperFactory.createWrapperInvoker(packetType.getState(), nmsClass);
         });
     }

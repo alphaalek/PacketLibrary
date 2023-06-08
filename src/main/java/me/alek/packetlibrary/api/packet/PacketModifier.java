@@ -2,7 +2,7 @@ package me.alek.packetlibrary.api.packet;
 
 public interface PacketModifier<T> {
 
-    void write(int index, T value);
+    PacketModifier<T> write(int index, T value);
 
     T read(int index);
 

@@ -14,11 +14,11 @@ public class NMSUtils {
     private static final Class<?> networkManagerClass = Reflection.getClass("{nms}.NetworkManager");
     private static final MethodInvoker getHandle = Reflection.getMethod(
             CraftPlayer.class, "getHandle", entityPlayerClass);
-    private static final Reflection.FieldAccessor<Object> playerConnection = Reflection.getField(
+    private static final FieldAccessor<Object> playerConnection = Reflection.getField(
             entityPlayerClass, "playerConnection", playerConnectionClass);
-    private static final Reflection.FieldAccessor<Object> networkManager = Reflection.getField(
+    private static final FieldAccessor<Object> networkManager = Reflection.getField(
             playerConnectionClass, "networkManager", networkManagerClass);
-    private static final Reflection.FieldAccessor<Channel> channel = Reflection.getField(
+    private static final FieldAccessor<Channel> channel = Reflection.getField(
             networkManagerClass, "channel", Channel.class);
 
     private static final HashMap<UUID, Channel> lookupChannels = new HashMap<>();
