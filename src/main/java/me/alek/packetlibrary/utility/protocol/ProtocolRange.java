@@ -47,7 +47,6 @@ public class ProtocolRange {
     }
 
     public boolean match(Protocol protocol) {
-        Bukkit.getLogger().info("CHECKING RANGE " + bound + " -> " + to + ": " + protocol + " (" + protocol.isBetween(bound, to) + ")");
         return protocol.isBetween(bound, to);
     }
 }

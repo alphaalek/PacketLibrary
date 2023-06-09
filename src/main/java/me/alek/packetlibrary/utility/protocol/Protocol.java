@@ -104,7 +104,7 @@ public enum Protocol {
     }
 
     public Protocol getAfter() {
-        if (ordinal() == Protocol.values().length - 2) {
+        if (ordinal() == REVERSED_PROTOCOLS.get(1).ordinal()) {
             return this;
         }
         return Protocol.values()[ordinal() + 1];

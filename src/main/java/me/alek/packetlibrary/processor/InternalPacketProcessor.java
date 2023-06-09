@@ -1,16 +1,15 @@
 package me.alek.packetlibrary.processor;
 
 import io.netty.channel.Channel;
+import me.alek.packetlibrary.PluginTest;
+import me.alek.packetlibrary.api.event.EventManager;
 import me.alek.packetlibrary.api.event.PacketEvent;
 import me.alek.packetlibrary.api.event.impl.*;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.api.packet.PacketProcessor;
 import me.alek.packetlibrary.listener.AsyncPacketAdapter;
 import me.alek.packetlibrary.packet.*;
-import me.alek.packetlibrary.packet.type.PacketState;
-import me.alek.packetlibrary.packet.type.PacketType;
-import me.alek.packetlibrary.packet.type.PacketTypeEnum;
-import me.alek.packetlibrary.packet.type.RangedPacketTypeEnum;
+import me.alek.packetlibrary.packet.type.*;
 import me.alek.packetlibrary.utility.protocol.Protocol;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 import org.bukkit.Bukkit;
@@ -18,11 +17,17 @@ import org.bukkit.entity.Player;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class InternalPacketProcessor implements PacketProcessor {
 
-    private final ConcurrentHashMap<Object, PacketState> lookupPacketStates = new ConcurrentHashMap<>();
-    private final Map<Class<?>, ListModifier<?>> packetAdapters = new HashMap<>();
+    private final ConcurrentHashMap<Object, PacketState> LOOKUP_PACKET_STATES = new ConcurrentHashMap<>();
+    private final Map<Class<?>, ListModifier<?>> PACKET_ADAPTERS = new HashMap<>();
+    private final EventManager EVENT_MANAGER;
+
+    public InternalPacketProcessor(EventManager eventManager) {
+        this.EVENT_MANAGER = eventManager;
+    }
 
     private static class ListModifier<WP extends WrappedPacket<WP>> {
 
@@ -66,10 +71,10 @@ public class InternalPacketProcessor implements PacketProcessor {
                     continue;
                 }
             }
-            if (!packetAdapters.containsKey(packetType.getNmsClass())) {
-                packetAdapters.put(packetType.getNmsClass(), new ListModifier<>());
+            if (!PACKET_ADAPTERS.containsKey(packetType.getNmsClass())) {
+                PACKET_ADAPTERS.put(packetType.getNmsClass(), new ListModifier<>());
             }
-            packetAdapters.get(packetType.getNmsClass()).addListener(packetAdapter);
+            PACKET_ADAPTERS.get(packetType.getNmsClass()).addListener(packetAdapter);
         }
     }
 
@@ -83,9 +88,9 @@ public class InternalPacketProcessor implements PacketProcessor {
 
     public void removeListener(AsyncPacketAdapter<?> packetAdapter, List<PacketTypeEnum> packetTypes) {
         for (PacketTypeEnum packetType : packetTypes) {
-            packetAdapters.get(packetType.getNmsClass()).removeListener(packetAdapter);
-            if (packetAdapters.get(packetType.getNmsClass()).isEmpty()) {
-                packetAdapters.remove(packetType.getNmsClass());
+            PACKET_ADAPTERS.get(packetType.getNmsClass()).removeListener(packetAdapter);
+            if (PACKET_ADAPTERS.get(packetType.getNmsClass()).isEmpty()) {
+                PACKET_ADAPTERS.remove(packetType.getNmsClass());
             }
         }
     }
@@ -100,51 +105,66 @@ public class InternalPacketProcessor implements PacketProcessor {
     }
 
     public boolean hasListener(Class<?> clazz) {
-        if (!packetAdapters.containsKey(clazz)) {
+        if (!PACKET_ADAPTERS.containsKey(clazz)) {
             return false;
         }
-        return !packetAdapters.get(clazz).isEmpty();
+        return !PACKET_ADAPTERS.get(clazz).isEmpty();
     }
 
     public void callListeners(Player player, Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead) {
         if (!hasListener(clazz)) {
             return;
         }
-        packetAdapters.get(clazz).call(player, packetContainer, isRead);
+        PACKET_ADAPTERS.get(clazz).call(player, packetContainer, isRead);
+    }
+
+    private void callSync(Runnable runnable) {
+        Bukkit.getScheduler().runTask(PluginTest.get(), runnable);
     }
 
     @Override
     public PacketContainer<? extends WrappedPacket<?>> read(Channel channel, Player player, Object packet) {
         final PacketState packetState = getPacketState(player, packet);
         if (packetState == PacketState.UNKNOWN) {
-            return null;
+            return InternalPacketContainer.SIMPLE_CONTAINER.apply(packet);
         }
+        final boolean hasAdapters = hasListener(PacketType.getPacketType(packet.getClass()));
+        final boolean hasListeners = EVENT_MANAGER.hasHandlers(EVENT_MANAGER.getEventFor(packetState, PacketBound.CLIENT));
+
+        if (!hasAdapters && !hasListeners) {
+            return InternalPacketContainer.SIMPLE_CONTAINER.apply(packet);
+        }
+
         final InternalPacketContainer<? extends WrappedPacket<?>> packetContainer = new InternalPacketContainer<>(
                 packet, PacketType.getPacketType(packet.getClass())
         );
-        callListeners(player, packet.getClass(), packetContainer, true);
-
-        PacketEvent packetEvent = null;
-        switch (packetState) {
-            case HANDSHAKE:
-                processHandshakeReceiveInternal(packetContainer);
-                packetEvent = new PacketHandshakeReceiveEvent(player, packetContainer);
-                break;
-            case LOGIN:
-                processLoginReceiveInternal(packetContainer);
-                packetEvent = new PacketLoginReceiveEvent(player, packetContainer);
-                break;
-            case STATUS:
-                processStatusReceiveInternal(packetContainer);
-                packetEvent = new PacketStatusReceiveEvent(player, packetContainer);
-                break;
-            case PLAY:
-                processPlayReceiveInternal(packetContainer);
-                packetEvent = new PacketPlayReceiveEvent(player, packetContainer);
-                break;
+        if (hasAdapters) {
+            callListeners(player, packet.getClass(), packetContainer, true);
         }
-        if (packetEvent != null) {
-            Bukkit.getPluginManager().callEvent(packetEvent);
+        if (hasListeners) {
+            AtomicReference<PacketEvent> packetEvent = new AtomicReference<>();
+            switch (packetState) {
+                case HANDSHAKE:
+                    processHandshakeReceiveInternal(packetContainer);
+                    packetEvent.set(new PacketHandshakeReceiveEvent(player, packetContainer));
+                    break;
+                case LOGIN:
+                    processLoginReceiveInternal(packetContainer);
+                    packetEvent.set(new PacketLoginReceiveEvent(player, packetContainer));
+                    break;
+                case STATUS:
+                    processStatusReceiveInternal(packetContainer);
+                    packetEvent.set(new PacketStatusReceiveEvent(player, packetContainer));
+                    break;
+                case PLAY:
+                    processPlayReceiveInternal(packetContainer);
+                    packetEvent.set(new PacketPlayReceiveEvent(player, packetContainer));
+                    break;
+            }
+            final PacketEvent event = packetEvent.get();
+            if (event != null) {
+                callSync(() -> Bukkit.getPluginManager().callEvent(event));
+            }
         }
         return packetContainer;
     }
@@ -153,34 +173,44 @@ public class InternalPacketProcessor implements PacketProcessor {
     public PacketContainer<? extends WrappedPacket<?>> write(Channel channel, Player player, Object packet) {
         final PacketState packetState = getPacketState(player, packet);
         if (packetState == PacketState.UNKNOWN) {
-            return null;
+            return InternalPacketContainer.SIMPLE_CONTAINER.apply(packet);
         }
+        final boolean hasAdapters = hasListener(PacketType.getPacketType(packet.getClass()));
+        final boolean hasListeners = EVENT_MANAGER.hasHandlers(EVENT_MANAGER.getEventFor(packetState, PacketBound.SERVER));
+
+        if (!hasAdapters && !hasListeners) {
+            Bukkit.broadcastMessage("no adapter or listener");
+            return InternalPacketContainer.SIMPLE_CONTAINER.apply(packet);
+        }
+
         final InternalPacketContainer<? extends WrappedPacket<?>> packetContainer = new InternalPacketContainer<>(
                 packet, PacketType.getPacketType(packet.getClass())
         );
-        callListeners(player, packet.getClass(), packetContainer, false);
 
-        PacketEvent packetEvent = null;
-        switch (getPacketState(player, packet)) {
-            case HANDSHAKE:
-                processHandshakeSendInternal(packetContainer);
-                packetEvent = new PacketHandshakeSendEvent(player, packetContainer);
-                break;
-            case LOGIN:
-                processLoginSendInternal(packetContainer);
-                packetEvent = new PacketLoginSendEvent(player, packetContainer);
-                break;
-            case STATUS:
-                processStatusSendInternal(packetContainer);
-                packetEvent = new PacketStatusSendEvent(player, packetContainer);
-                break;
-            case PLAY:
-                processPlaySendInternal(packetContainer);
-                packetEvent = new PacketPlaySendEvent(player, packetContainer);
-                break;
+        if (hasAdapters) {
+            callListeners(player, packet.getClass(), packetContainer, false);
         }
-        if (packetEvent != null) {
-            Bukkit.getPluginManager().callEvent(packetEvent);
+        if (hasListeners) {
+            AtomicReference<PacketEvent> packetEvent = new AtomicReference<>();
+            switch (getPacketState(player, packet)) {
+                case LOGIN:
+                    processLoginSendInternal(packetContainer);
+                    packetEvent.set(new PacketLoginSendEvent(player, packetContainer));
+                    break;
+                case STATUS:
+                    processStatusSendInternal(packetContainer);
+                    packetEvent.set(new PacketStatusSendEvent(player, packetContainer));
+                    break;
+                case PLAY:
+                    processPlaySendInternal(packetContainer);
+                    packetEvent.set(new PacketPlaySendEvent(player, packetContainer));
+                    break;
+            }
+            final PacketEvent event = packetEvent.get();
+            if (event != null) {
+                callSync(() -> Bukkit.getPluginManager().callEvent(event));
+            }
+            Bukkit.broadcastMessage("called event");
         }
         return packetContainer;
     }
@@ -193,7 +223,7 @@ public class InternalPacketProcessor implements PacketProcessor {
             return PacketState.PLAY;
         }
         PacketState packetState;
-        if (!lookupPacketStates.containsKey(packet.getClass())) {
+        if (!LOOKUP_PACKET_STATES.containsKey(packet.getClass())) {
             String packetName = packet.getClass().getSimpleName();
             if (packetName.startsWith("PacketH")) {
                 packetState = PacketState.HANDSHAKE;
@@ -207,18 +237,15 @@ public class InternalPacketProcessor implements PacketProcessor {
             else {
                 packetState = PacketState.UNKNOWN;
             }
-            lookupPacketStates.put(packet.getClass(), packetState);
+            LOOKUP_PACKET_STATES.put(packet.getClass(), packetState);
         }
         else {
-            packetState = lookupPacketStates.get(packet.getClass());
+            packetState = LOOKUP_PACKET_STATES.get(packet.getClass());
         }
         return packetState;
     }
 
     public <WP extends WrappedPacket<WP>> void processHandshakeReceiveInternal(PacketContainer<WP> packetContainer) {
-    }
-
-    public <WP extends WrappedPacket<WP>> void processHandshakeSendInternal(PacketContainer<WP> packetContainer) {
     }
 
     public <WP extends WrappedPacket<WP>> void processStatusReceiveInternal(PacketContainer<WP> packetContainer) {

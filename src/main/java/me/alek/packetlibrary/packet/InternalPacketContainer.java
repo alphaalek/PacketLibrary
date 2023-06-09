@@ -10,8 +10,13 @@ import me.alek.packetlibrary.packet.type.PacketTypeEnum;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 import org.bukkit.Bukkit;
 
+import java.util.function.Function;
+
 public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements PacketContainer<WP> {
 
+    public static Function<Object, PacketContainer<? extends WrappedPacket<?>>> SIMPLE_CONTAINER = (packet) -> {
+        return new InternalPacketContainer<>(null, null, null, packet);
+    };
     private final PacketTypeEnum type;
     private final Object handle;
     private final WP wrappedPacket;
@@ -23,6 +28,18 @@ public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements Pa
     ) {
         this.wrappedPacket = (WP) PacketWrapperCache.getWrapper(type, rawPacket, this);
         this.packetStructure = PacketStructureCache.getStructure(type);
+        this.type = type;
+        this.handle = rawPacket;
+    }
+
+    public InternalPacketContainer(
+        PacketStructure<Object> packetStructure,
+        WP wrappedPacket,
+        PacketTypeEnum type,
+        Object rawPacket
+    ) {
+        this.wrappedPacket = wrappedPacket;
+        this.packetStructure = packetStructure;
         this.type = type;
         this.handle = rawPacket;
     }

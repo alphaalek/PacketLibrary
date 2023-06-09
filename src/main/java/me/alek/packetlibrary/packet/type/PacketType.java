@@ -19,14 +19,12 @@ public class PacketType {
 
     private static void addPacket(Class<?> clazz, byte id, PacketTypeEnum type) {
         PACKET_STATE_TYPE.get(type.getState()).add(type);
-        Bukkit.getLogger().info("ADDING!!!! " + Protocol.getProtocol().name());
 
         if (type instanceof RangedPacketTypeEnum) {
             if (!Protocol.protocolMatch((RangedPacketTypeEnum) type)) {
                 return;
             }
         }
-        Bukkit.getLogger().info("adding " + clazz);
         PACKET_DETAILS.put(clazz, new PacketDetails(){{
             this.packetId = id;
             this.packetType = type;
@@ -648,6 +646,7 @@ public class PacketType {
         private static Class<?> ADVANCEMENTS_SERVER_CLASS;
         private static Class<?> AUTO_RECIPE_SERVER_CLASS;
         private static Class<?> BED_CLASS;
+        private static Class<?> BLOCK_BREAK_CLASS;
         private static Class<?> BOSS_CLASS;
         private static Class<?> CHAT_SERVER_CLASS;
         private static Class<?> COMBAT_EVENT_CLASS;
@@ -750,6 +749,11 @@ public class PacketType {
                 VIEW_CENTRE_CLASS = Reflection.getClass("{nms}.PacketPlayOutViewCentre");
                 VIEW_DISTANCE_CLASS = Reflection.getClass("{nms}.PacketPlayOutViewDistance");
             }
+            Bukkit.getLogger().info(PROTOCOL_VERSION + "");
+            if (PROTOCOL_VERSION.isNewerThanOrEqual(Protocol.v1_14_4)) {
+                Bukkit.getLogger().info("OVER 1.14!!");
+                BLOCK_BREAK_CLASS = Reflection.getClass("{nms}.PacketPlayOutBlockBreak");
+            }
             if (PROTOCOL_VERSION.isNewerThanOrEqual(Protocol.v1_17)) {
                 ENTITY_LOOK_CLASS = Reflection.getClass( "{nms}.PacketPlayOutEntity$PacketPlayOutEntityLook");
                 REL_ENTITY_MOVE_CLASS = Reflection.getClass( "{nms}.PacketPlayOutEntity$PacketPlayOutRelEntityMove");
@@ -791,7 +795,7 @@ public class PacketType {
                 SET_COMPRESSION = (byte) 254, UPDATE_ENTITY_NBT = (byte) 253, UPDATE_SIGN_SERVER = (byte) 252,
                 BED = (byte) 251, SPAWN_ENTITY_WEATHER = (byte) 250, TITLE = (byte) 249, WORLD_BORDER = (byte) 248,
                 COMBAT_EVENT = (byte) 249, TRANSACTION_SERVER = (byte) 248, ENTITY = (byte) 245,
-                SPAWN_ENTITY_LIVING = (byte) 244, SPAWN_ENTITY_PAINTING = (byte) 243;
+                SPAWN_ENTITY_LIVING = (byte) 244, SPAWN_ENTITY_PAINTING = (byte) 243, BLOCK_BREAK = (byte) 242;
 
 
         public enum Server implements RangedPacketTypeEnum {
@@ -803,6 +807,7 @@ public class PacketType {
             AUTO_RECIPE(AUTO_RECIPE_SERVER_CLASS, Play.AUTO_RECIPE_SERVER, ProtocolRange.since(Protocol.v1_12_1)),
             BED(BED_CLASS, Play.BED, ProtocolRange.until(Protocol.v1_13_2)),
             BLOCK_ACTION(BLOCK_ACTION_CLASS, Play.BLOCK_ACTION),
+            BLOCK_BREAK(BLOCK_BREAK_CLASS, Play.BLOCK_BREAK, ProtocolRange.since(Protocol.v1_14)),
             BLOCK_BREAK_ANIMATION(BLOCK_BREAK_ANIMATION_CLASS, Play.BLOCK_BREAK_ANIMATION),
             BLOCK_CHANGE(BLOCK_CHANGE_CLASS, Play.BLOCK_CHANGE),
             BOSS(BOSS_CLASS, Play.BOSS, ProtocolRange.since(Protocol.v1_9)),

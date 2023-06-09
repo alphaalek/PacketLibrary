@@ -1,5 +1,6 @@
 package me.alek.packetlibrary;
 
+import me.alek.packetlibrary.api.event.EventManager;
 import me.alek.packetlibrary.api.packet.PacketProcessor;
 import me.alek.packetlibrary.bukkit.BukkitEventInternal;
 import me.alek.packetlibrary.injector.EarlyChannelInjector;
@@ -23,6 +24,7 @@ public class PacketLibrary {
     private final PacketLibrarySettings settings;
     private final NettyInjector injector;
     private final PacketProcessor internalPacketProcessor;
+    private final EventManager eventManager;
     private final AsyncFuture future;
 
     public PacketLibrary(PacketLibrarySettings settings) {
@@ -35,10 +37,15 @@ public class PacketLibrary {
         else {
             injector = new EarlyChannelInjector();
         }
-        internalPacketProcessor = new InternalPacketProcessor();
+        eventManager = new EventManager();
+        internalPacketProcessor = new InternalPacketProcessor(eventManager);
 
         future = PacketType.load();
         future.andThen(PacketWrapperFactory.load());
+    }
+
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
     public NettyInjector getInjector() {

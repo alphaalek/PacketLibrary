@@ -498,6 +498,11 @@ public class PacketWrapperFactory {
         return new WrappedPlayOutBlockAction(rawPacket, packetContainer);
     }
 
+    @WrappedPacket("PacketPlayOutBlockBreak")
+    public static WrappedPlayOutBlockBreak playOutBlockBreak(Object rawPacket, PacketContainer<WrappedPlayOutBlockBreak> packetContainer) {
+        return new WrappedPlayOutBlockBreak(rawPacket, packetContainer);
+    }
+
     @WrappedPacket("PacketPlayOutBlockBreakAnimation")
     public static WrappedPlayOutBlockBreakAnimation playOutBlockBreakAnimation(Object rawPacket, PacketContainer<WrappedPlayOutBlockBreakAnimation> packetContainer) {
         return new WrappedPlayOutBlockBreakAnimation(rawPacket, packetContainer);
