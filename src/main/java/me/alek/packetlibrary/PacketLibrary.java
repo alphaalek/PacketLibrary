@@ -16,12 +16,14 @@ import me.alek.packetlibrary.wrappers.WrappedPacket;
 import org.bukkit.Bukkit;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public class PacketLibrary {
 
     private final PacketLibrarySettings settings;
     private final NettyInjector injector;
     private final PacketProcessor internalPacketProcessor;
+    private final AsyncFuture future;
 
     public PacketLibrary(PacketLibrarySettings settings) {
         this.settings = settings;
@@ -34,8 +36,9 @@ public class PacketLibrary {
             injector = new EarlyChannelInjector();
         }
         internalPacketProcessor = new InternalPacketProcessor();
-        AsyncFuture future = PacketType.load();
-        future.addListener(PacketWrapperFactory::load);
+
+        future = PacketType.load();
+        future.andThen(PacketWrapperFactory.load());
     }
 
     public NettyInjector getInjector() {
@@ -58,20 +61,28 @@ public class PacketLibrary {
         return internalPacketProcessor;
     }
 
-    public <WP extends WrappedPacket<WP>> void addListener(AsyncPacketAdapter<WP> adapter, PacketTypeEnum... packetTypes) {
-        internalPacketProcessor.addListener(adapter, packetTypes);
+    private void addListener(Runnable runnable) {
+        if (future.isDone()) {
+            runnable.run();
+            return;
+        }
+        future.addListener(runnable);
     }
 
-    public <WP extends WrappedPacket<WP>> void addListener(AsyncPacketAdapter<WP> adapter, List<PacketTypeEnum> packetTypes) {
-        internalPacketProcessor.addListener(adapter, packetTypes);
+    public <WP extends WrappedPacket<WP>> void addListener(AsyncPacketAdapter<WP> adapter, Supplier<PacketTypeEnum> packetTypes) {
+        addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
     }
 
-    public void addUnparameterizedListener(AsyncPacketAdapter<?> adapter, PacketTypeEnum... packetTypes) {
-        internalPacketProcessor.addListener(adapter, packetTypes);
+    public <WP extends WrappedPacket<WP>> void addListeners(AsyncPacketAdapter<WP> adapter, Supplier<List<PacketTypeEnum>> packetTypes) {
+        addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
     }
 
-    public void addUnparameterizedListener(AsyncPacketAdapter<?> adapter, List<PacketTypeEnum> packetTypes) {
-        internalPacketProcessor.addListener(adapter, packetTypes);
+    public void addFuzzyListener(AsyncPacketAdapter<?> adapter, Supplier<PacketTypeEnum> packetTypes) {
+        addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
+    }
+
+    public void addFuzzyListeners(AsyncPacketAdapter<?> adapter, Supplier<List<PacketTypeEnum>> packetTypes) {
+        addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
     }
 
 

@@ -8,6 +8,7 @@ import me.alek.packetlibrary.packet.structure.PacketStructureCache;
 import me.alek.packetlibrary.packet.type.PacketState;
 import me.alek.packetlibrary.packet.type.PacketTypeEnum;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
+import org.bukkit.Bukkit;
 
 public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements PacketContainer<WP> {
 
@@ -20,14 +21,8 @@ public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements Pa
             Object rawPacket,
             PacketTypeEnum type
     ) {
-        if (type == null) {
-            this.wrappedPacket = null;
-            this.packetStructure = null;
-        }
-        else {
-            this.wrappedPacket = (WP) PacketWrapperCache.getWrapper(type, rawPacket, this);
-            this.packetStructure = PacketStructureCache.getStructure(type);
-        }
+        this.wrappedPacket = (WP) PacketWrapperCache.getWrapper(type, rawPacket, this);
+        this.packetStructure = PacketStructureCache.getStructure(type);
         this.type = type;
         this.handle = rawPacket;
     }

@@ -151,13 +151,13 @@ public class InternalPacketProcessor implements PacketProcessor {
 
     @Override
     public PacketContainer<? extends WrappedPacket<?>> write(Channel channel, Player player, Object packet) {
-
         final PacketState packetState = getPacketState(player, packet);
         if (packetState == PacketState.UNKNOWN) {
             return null;
         }
         final InternalPacketContainer<? extends WrappedPacket<?>> packetContainer = new InternalPacketContainer<>(
-                packet, null);//PacketType.Status.Server.PING_RESPONSE);
+                packet, PacketType.getPacketType(packet.getClass())
+        );
         callListeners(player, packet.getClass(), packetContainer, false);
 
         PacketEvent packetEvent = null;

@@ -4,13 +4,11 @@ import me.alek.packetlibrary.PluginTest;
 import me.alek.packetlibrary.packet.type.RangedPacketTypeEnum;
 import org.bukkit.Bukkit;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public enum Protocol {
-    v1_8(47), v1_8_1(47), v1_8_2(47), v1_8_3(47), v1_8_4(47), v1_8_5(47), v1_8_6(47), v1_8_7(47), v1_8_8(47), v1_8_9(47),
-    v1_9(107), v1_9_1(108), v1_9_2(109), v1_9_3(110), v1_9_4(110),
+    v1_8(47), v1_8_1(47), v1_8_2(47), v1_8_3(47), v1_8_4(47), v1_8_5(47), v1_8_6(47), v1_8_7(47), v1_8_8(47),
+    v1_9(107), v1_9_2(109), v1_9_4(110),
     v1_10(210), v1_10_1(210), v1_10_2(210),
     v1_11(315), v1_11_1(316), v1_11_2(316),
     v1_12(335), v1_12_1(338), v1_12_2(340),
@@ -26,10 +24,15 @@ public enum Protocol {
     private static Protocol PROTOCOL_CACHE;
     private static final HashMap<Integer, List<Protocol>> protocolVersionMap = new HashMap<>();
     private static final List<Protocol> PROTOCOLS = new ArrayList<>();
+    private static final List<Protocol> REVERSED_PROTOCOLS = new ArrayList<>();
 
     static {
-        for (Protocol version : Protocol.values()) {
-            PROTOCOLS.add(version);
+        REVERSED_PROTOCOLS.addAll(Arrays.asList(Protocol.values()));
+        PROTOCOLS.addAll(REVERSED_PROTOCOLS);
+
+        Collections.reverse(REVERSED_PROTOCOLS);
+
+        for (Protocol version : PROTOCOLS) {
 
             int protocol = version.getProtocolVersion();
             if (!protocolVersionMap.containsKey(protocol)) {
@@ -46,8 +49,8 @@ public enum Protocol {
     }
 
     private static Protocol acquireProtocol() {
-        for (Protocol version : Protocol.values()) {
-            final String name = version.name().substring(1).replace("_", ".");
+        for (Protocol version : REVERSED_PROTOCOLS) {
+            final String name = version.name().replace("v", "").substring(1).replace("_", ".");
             if (Bukkit.getVersion().contains(name)) {
                 return version;
             }
@@ -70,59 +73,19 @@ public enum Protocol {
     }
 
     public boolean isOlderThan(Protocol target) {
-        if (protocolVersion == target.getProtocolVersion()) {
-            for (Protocol sameVersionProtocol : protocolVersionMap.get(protocolVersion)) {
-                if (sameVersionProtocol == this) {
-                    return false;
-                }
-                if (sameVersionProtocol == target) {
-                    return true;
-                }
-            }
-        }
-        return protocolVersion < target.getProtocolVersion();
+        return ordinal() < target.ordinal();
     }
 
     public boolean isOlderThanOrEqual(Protocol target) {
-        if (protocolVersion == target.getProtocolVersion()) {
-            for (Protocol sameVersionProtocol : protocolVersionMap.get(protocolVersion)) {
-                if (sameVersionProtocol == this) {
-                    return sameVersionProtocol == target;
-                }
-                if (sameVersionProtocol == target) {
-                    return true;
-                }
-            }
-        }
-        return protocolVersion <= target.getProtocolVersion();
+        return ordinal() <= target.ordinal();
     }
 
     public boolean isNewerThan(Protocol target) {
-        if (protocolVersion == target.getProtocolVersion()) {
-            for (Protocol sameVersionProtocol : protocolVersionMap.get(protocolVersion)) {
-                if (sameVersionProtocol == target) {
-                    return false;
-                }
-                if (sameVersionProtocol == this) {
-                    return true;
-                }
-            }
-        }
-        return protocolVersion > target.getProtocolVersion();
+        return ordinal() > target.ordinal();
     }
 
     public boolean isNewerThanOrEqual(Protocol target) {
-        if (protocolVersion == target.getProtocolVersion()) {
-            for (Protocol sameVersionProtocol : protocolVersionMap.get(protocolVersion)) {
-                if (sameVersionProtocol == target) {
-                    return sameVersionProtocol == this;
-                }
-                if (sameVersionProtocol == this) {
-                    return false;
-                }
-            }
-        }
-        return protocolVersion >= target.getProtocolVersion();
+        return ordinal() >= target.ordinal();
     }
 
     public boolean isBetween(Protocol target1, Protocol target2) {
@@ -157,11 +120,11 @@ public enum Protocol {
     }
 
     public static Protocol getLatest() {
-        return PROTOCOLS.get(PROTOCOLS.size() - 2);
+        return REVERSED_PROTOCOLS.get(1);
     }
 
     public static Protocol getOldest() {
-        return PROTOCOLS.get(0);
+        return Protocol.values()[0];
     }
 
     public int getProtocolVersion() {

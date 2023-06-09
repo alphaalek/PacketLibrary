@@ -14,7 +14,7 @@ public class PluginTest extends JavaPlugin {
         instance = this;
         packetLibrary = new PacketLibrary(new PacketLibrarySettings());
         new PositionModule();
-        //new FloodModule();
+        new FloodModule();
     }
 
     public static PluginTest get() {

@@ -1,5 +1,7 @@
 package me.alek.packetlibrary.utility.protocol;
 
+import org.bukkit.Bukkit;
+
 public class ProtocolRange {
 
     public static final ProtocolRange ALL = ProtocolRange.since(Protocol.getOldest());
@@ -8,7 +10,7 @@ public class ProtocolRange {
         return new ProtocolRange(protocol, Protocol.getLatest());
     }
 
-    public static ProtocolRange sinceWithout(Protocol protocol) {
+    public static ProtocolRange after(Protocol protocol) {
         return new ProtocolRange(protocol.getAfter(), Protocol.getLatest());
     }
 
@@ -24,7 +26,7 @@ public class ProtocolRange {
         return new ProtocolRange(Protocol.getOldest(), protocol);
     }
 
-    public static ProtocolRange beforeWithout(Protocol protocol) {
+    public static ProtocolRange before(Protocol protocol) {
         return new ProtocolRange(Protocol.getOldest(), protocol.getBefore());
     }
 
@@ -45,6 +47,7 @@ public class ProtocolRange {
     }
 
     public boolean match(Protocol protocol) {
+        Bukkit.getLogger().info("CHECKING RANGE " + bound + " -> " + to + ": " + protocol + " (" + protocol.isBetween(bound, to) + ")");
         return protocol.isBetween(bound, to);
     }
 }

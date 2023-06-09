@@ -44,13 +44,12 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
             super.write(ctx, packet, promise);
             return;
         }
-        /*PacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
+        PacketProcessor packetProcessor = PluginTest.get().getPacketLibrary().getPacketProcessor();
         PacketContainer<? extends WrappedPacket<?>> packetContainer = packetProcessor.write(ctx.channel(), player, packet);
 
         if (packetContainer == null) {
             return;
         }
-        super.write(ctx, packetContainer.getHandle(), promise);*/
-        super.write(ctx, packet, promise);
+        super.write(ctx, packetContainer.getHandle(), promise);
     }
 }

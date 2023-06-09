@@ -1,13 +1,16 @@
 package me.alek.packetlibrary.utility;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import org.bukkit.Bukkit;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class AsyncFuture {
 
     private final List<Runnable> listeners = new ArrayList<>();
+    private final Queue<Consumer<AsyncFuture>> waitingFutures = new LinkedList<>();
+    private boolean isDone = false;
 
     public AsyncFuture() {
 
@@ -25,13 +28,26 @@ public class AsyncFuture {
         this.listeners.addAll(Arrays.asList(listeners));
     }
 
+    public void andThen(Consumer<AsyncFuture> future) {
+        waitingFutures.add(future);
+    }
+
     public boolean hasListener() {
         return !listeners.isEmpty();
     }
 
+    public boolean isDone() {
+        return isDone;
+    }
+
     public void done() {
-        for (Runnable listener : listeners) {
-            listener.run();
+        if (waitingFutures.isEmpty()) {
+            isDone = true;
+            for (Runnable listener : listeners) {
+                listener.run();
+            }
+            return;
         }
+        waitingFutures.poll().accept(this);
     }
 }

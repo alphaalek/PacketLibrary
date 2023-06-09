@@ -4,12 +4,10 @@ import me.alek.packetlibrary.api.packet.PacketModifier;
 import me.alek.packetlibrary.api.packet.PacketStructure;
 import me.alek.packetlibrary.utility.reflect.FieldAccessor;
 import me.alek.packetlibrary.utility.reflect.Reflection;
-import org.bukkit.Bukkit;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class InternalPacketStructure<T> implements PacketStructure<T> {

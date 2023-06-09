@@ -5,6 +5,7 @@ import io.netty.channel.ChannelPipeline;
 import me.alek.packetlibrary.api.NettyInjector;
 import me.alek.packetlibrary.handler.PlayerChannelDuplexHandler;
 import me.alek.packetlibrary.utility.reflect.NMSUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class LateChannelInjector implements NettyInjector {
         injectedPlayers.add(player.getUniqueId());
 
         Channel channel = NMSUtils.getChannel(player);
+        Bukkit.broadcastMessage("Channel: " + channel);
         ChannelPipeline pipeline = channel.pipeline();
         pipeline.addBefore("packet_handler", player.getName(), new PlayerChannelDuplexHandler(player));
     }

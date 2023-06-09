@@ -31,42 +31,48 @@ public class Reflection {
     }
 
     static {
+        String OBC = Bukkit.getServer().getClass().getPackage().getName();
+        String NMS;
+
         boolean newProtocol = Protocol.getProtocol().isNewerThanOrEqual(Protocol.v1_17);
-        Bukkit.getLogger().info("NEW PROTOCL: " + newProtocol);
         if (newProtocol) {
-            NEW_PROTOCOL_STATES = new HashMap<String, String>(){{
+            PROTOCOL_STATES = new HashMap<String, String>(){{
                 put("PacketHandshaking", "handshake");
                 put("PacketStatus", "status");
                 put("PacketPlay", "game");
+                put("Clientbound", "game");
                 put("PacketLogin", "login");
             }};
+            NMS = "net.minecraft";
         }
         else {
-            NEW_PROTOCOL_STATES = null;
+            NMS = OBC.replace("org.bukkit.craftbukkit", "net.minecraft.server");
+            PROTOCOL_STATES = null;
         }
         USE_NEW_NMS_PROTOCOL = newProtocol;
+
+        OBC_PREFIX = OBC;
+        NMS_PREFIX = NMS;
     }
 
     private static final boolean USE_NEW_NMS_PROTOCOL;
-    private static final HashMap<String, String> NEW_PROTOCOL_STATES;
-    private static final String OBC_PREFIX = Bukkit.getServer().getClass()
-            .getPackage().getName();
-    private static final String NMS_PREFIX = OBC_PREFIX.replace(
-            "org.bukkit.craftbukkit", "net.minecraft.server");
+    private static final String OBC_PREFIX;
+    private static final String NMS_PREFIX;
     private static final String VERSION = OBC_PREFIX.replace(
             "org.bukkit.craftbukkit", "").replace(".", "");
     private static final Pattern MATCH_VARIABLE = Pattern.compile("\\{([^\\}]+)\\}");
+    private static final HashMap<String, String> PROTOCOL_STATES;
 
     public static Class<?> getSubClass(Class<?> superClass, String name) {
         if (superClass == null) {
-            throw new RuntimeException("Reflection fejl");
+            throw new RuntimeException("Reflection fejl " + name);
         }
         for (Class<?> subClass : superClass.getDeclaredClasses()) {
             if (subClass.getSimpleName().equals(name)) {
                 return subClass;
             }
         }
-        throw new RuntimeException("Reflection fejl");
+        throw new RuntimeException("Reflection fejl " + name);
     }
 
     public static Class<?> getSubClass(String superClass, String name) {
@@ -90,7 +96,7 @@ public class Reflection {
             Bukkit.getLogger().info("CLASS: " + name);
             return getCanonicalClassWithException(name);
         } catch (Exception ex) {
-            throw new RuntimeException("Reflection fejl");
+            throw new RuntimeException("Reflection fejl " + name);
         }
     }
 
@@ -99,13 +105,14 @@ public class Reflection {
         Matcher matcher = MATCH_VARIABLE.matcher(name);
         while (matcher.find()) {
             String variable = matcher.group(1);
+
             String replacement = "";
             if ("nms".equalsIgnoreCase(variable)) {
                 if (USE_NEW_NMS_PROTOCOL) {
-                    for (Map.Entry<String, String> stateEntry : NEW_PROTOCOL_STATES.entrySet()) {
+                    for (Map.Entry<String, String> stateEntry : PROTOCOL_STATES.entrySet()) {
 
                         if (name.contains(stateEntry.getKey())) {
-                            replacement = "net.minecraft.network.protocol." + stateEntry.getValue();
+                            replacement = NMS_PREFIX + ".network.protocol." + stateEntry.getValue();
                             break;
                         }
                     }
@@ -161,7 +168,7 @@ public class Reflection {
         if (target.getSuperclass() != null) {
             return getMethod(target.getSuperclass(), name, parameters);
         }
-        throw new RuntimeException("Reflection fejl");
+        throw new RuntimeException("Reflection fejl " + name);
     }
 
     public static <T> FieldAccessor<T> getField(String target, String name, Class<?> type) {
@@ -179,7 +186,7 @@ public class Reflection {
         if (target.getSuperclass() != null) {
             return getField(target.getSuperclass(), name, type);
         }
-        throw new RuntimeException("Reflection fejl");
+        throw new RuntimeException("Reflection fejl " + name);
     }
 
     public static String getVersion() {
