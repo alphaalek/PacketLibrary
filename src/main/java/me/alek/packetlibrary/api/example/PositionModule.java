@@ -1,10 +1,9 @@
-package me.alek.packetlibrary.example;
+package me.alek.packetlibrary.api.example;
 
 import me.alek.packetlibrary.PluginTest;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.listener.AsyncPacketAdapter;
 import me.alek.packetlibrary.packet.type.PacketType;
-import me.alek.packetlibrary.utility.reflect.NMSUtils;
 import me.alek.packetlibrary.wrappers.play.client.WrappedPlayInPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;

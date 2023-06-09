@@ -1,9 +1,8 @@
-package me.alek.packetlibrary.example;
+package me.alek.packetlibrary.api.example;
 
 import me.alek.packetlibrary.PluginTest;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.listener.FuzzyPacketAdapter;
-import me.alek.packetlibrary.packet.type.PacketBound;
 import me.alek.packetlibrary.packet.type.PacketType;
 import me.alek.packetlibrary.utility.protocol.Protocol;
 import org.bukkit.Bukkit;

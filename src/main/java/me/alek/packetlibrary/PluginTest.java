@@ -1,7 +1,7 @@
 package me.alek.packetlibrary;
 
-import me.alek.packetlibrary.example.FloodModule;
-import me.alek.packetlibrary.example.PositionModule;
+import me.alek.packetlibrary.api.example.FloodModule;
+import me.alek.packetlibrary.api.example.PositionModule;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PluginTest extends JavaPlugin {
