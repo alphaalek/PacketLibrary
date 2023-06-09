@@ -22,7 +22,7 @@ public class PacketEvent extends Event {
         return player;
     }
 
-    public PacketContainer<?> getPacket() {
+    public PacketContainer<? extends WrappedPacket<?>> getPacket() {
         return packet;
     }
 

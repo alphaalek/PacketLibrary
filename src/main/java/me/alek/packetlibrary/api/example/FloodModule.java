@@ -1,5 +1,6 @@
 package me.alek.packetlibrary.api.example;
 
+import me.alek.packetlibrary.PacketLibrary;
 import me.alek.packetlibrary.PluginTest;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.listener.FuzzyPacketAdapter;
@@ -11,7 +12,7 @@ import org.bukkit.entity.Player;
 public class FloodModule extends FuzzyPacketAdapter {
 
     public FloodModule() {
-        PluginTest.get().getPacketLibrary().addFuzzyListeners(this, () -> PacketType.getTypesAvailableFor(Protocol.getProtocol()));
+        PacketLibrary.get().addFuzzyListeners(this, () -> PacketType.getTypesAvailableFor(Protocol.getProtocol()));
     }
 
     @Override

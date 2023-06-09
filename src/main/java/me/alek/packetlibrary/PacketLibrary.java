@@ -7,6 +7,7 @@ import me.alek.packetlibrary.injector.EarlyChannelInjector;
 import me.alek.packetlibrary.injector.LateChannelInjector;
 import me.alek.packetlibrary.api.NettyInjector;
 import me.alek.packetlibrary.listener.AsyncPacketAdapter;
+import me.alek.packetlibrary.listener.FuzzyPacketAdapter;
 import me.alek.packetlibrary.packet.type.PacketType;
 import me.alek.packetlibrary.packet.type.PacketTypeEnum;
 import me.alek.packetlibrary.packet.cache.PacketWrapperFactory;
@@ -27,7 +28,18 @@ public class PacketLibrary {
     private final EventManager eventManager;
     private final AsyncFuture future;
 
-    public PacketLibrary(PacketLibrarySettings settings) {
+    private static PacketLibrary INSTANCE;
+
+    public static PacketLibrary get() {
+        return INSTANCE;
+    }
+
+    public static PacketLibrary set(PacketLibrarySettings settings) {
+        INSTANCE = new PacketLibrary(settings);
+        return INSTANCE;
+    }
+
+    private PacketLibrary(PacketLibrarySettings settings) {
         this.settings = settings;
         Bukkit.getServer().getPluginManager().registerEvents(new BukkitEventInternal(), PluginTest.get());
 
@@ -84,11 +96,7 @@ public class PacketLibrary {
         addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
     }
 
-    public void addFuzzyListener(AsyncPacketAdapter<?> adapter, Supplier<PacketTypeEnum> packetTypes) {
-        addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
-    }
-
-    public void addFuzzyListeners(AsyncPacketAdapter<?> adapter, Supplier<List<PacketTypeEnum>> packetTypes) {
+    public void addFuzzyListeners(FuzzyPacketAdapter adapter, Supplier<List<PacketTypeEnum>> packetTypes) {
         addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
     }
 

@@ -1,5 +1,6 @@
 package me.alek.packetlibrary.utility.protocol;
 
+import me.alek.packetlibrary.PacketLibrary;
 import me.alek.packetlibrary.PluginTest;
 import me.alek.packetlibrary.packet.type.RangedPacketTypeEnum;
 import org.bukkit.Bukkit;
@@ -55,7 +56,7 @@ public enum Protocol {
                 return version;
             }
         }
-        Protocol fallbackVersion = PluginTest.get().getPacketLibrary().getSettings().getFallbackProtocol();
+        Protocol fallbackVersion = PacketLibrary.get().getSettings().getFallbackProtocol();
         if (fallbackVersion != null) {
             return fallbackVersion;
         }

@@ -1,5 +1,6 @@
 package me.alek.packetlibrary.api.example;
 
+import me.alek.packetlibrary.PacketLibrary;
 import me.alek.packetlibrary.PluginTest;
 import me.alek.packetlibrary.api.event.impl.PacketStatusReceiveEvent;
 import me.alek.packetlibrary.api.event.impl.PacketStatusSendEvent;
@@ -8,10 +9,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
-public class PacketStatusEvent implements Listener {
+public class PacketStatusListener implements Listener {
 
-    public PacketStatusEvent() {
-        PluginTest.get().getPacketLibrary().getEventManager().addListener(this);
+    public PacketStatusListener() {
+        PacketLibrary.get().getEventManager().addListener(this);
     }
 
     @EventHandler

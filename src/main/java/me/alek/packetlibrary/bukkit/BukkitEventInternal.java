@@ -13,7 +13,7 @@ public class BukkitEventInternal implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        PacketLibrary library = PluginTest.get().getPacketLibrary();
+        PacketLibrary library = PacketLibrary.get();
         if (library.useLateInjection() || !library.getInjector().hasInjected(player)) {
             library.getInjector().inject(player);
         }
