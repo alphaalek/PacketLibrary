@@ -18,8 +18,8 @@ public class LateChannelInjector implements NettyChannelProxy {
     }
 
     @Override
-    public void injectPlayer(Player player) {
-        CommonChannelInjector.injectPlayer(player, InjectEvent.InjectType.LATE);
+    public void injectPlayer(Player player, boolean reallyInject) {
+        CommonChannelInjector.injectPlayer(player, InjectEvent.InjectType.LATE, reallyInject);
     }
 
     @Override

@@ -31,8 +31,8 @@ public class EarlyChannelInjector implements NettyChannelProxy {
 
 
     @Override
-    public void injectPlayer(Player player) {
-        CommonChannelInjector.injectPlayer(player, InjectEvent.InjectType.EARLY);
+    public void injectPlayer(Player player, boolean reallyInject) {
+        CommonChannelInjector.injectPlayer(player, InjectEvent.InjectType.EARLY, reallyInject);
     }
 
     @Override

@@ -17,9 +17,10 @@ public class BukkitEventInternal implements Listener {
 
         PacketLibrary library = PacketLibrary.get();
         if (library.useLateInjection() || !library.getProxy().hasInjected(player)) {
-            library.getProxy().injectPlayer(player);
+            library.getProxy().injectPlayer(player, true);
         }
         else {
+            library.getProxy().injectPlayer(player, false);
             library.getProxy().getHandler(NMSUtils.getChannel(player)).setPlayer(player);
         }
     }

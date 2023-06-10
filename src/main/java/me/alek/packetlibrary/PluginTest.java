@@ -1,9 +1,6 @@
 package me.alek.packetlibrary;
 
-import me.alek.packetlibrary.api.example.ChatModule;
-import me.alek.packetlibrary.api.example.FloodModule;
-import me.alek.packetlibrary.api.example.PacketStatusListener;
-import me.alek.packetlibrary.api.example.PositionModule;
+import me.alek.packetlibrary.api.example.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PluginTest extends JavaPlugin {
@@ -19,6 +16,7 @@ public class PluginTest extends JavaPlugin {
         new FloodModule();
         new PacketStatusListener();
         new ChatModule();
+        new InjectListener();
     }
 
     @Override

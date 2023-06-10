@@ -2,6 +2,7 @@ package me.alek.packetlibrary.api.example;
 
 import me.alek.packetlibrary.PacketLibrary;
 import me.alek.packetlibrary.api.event.Listener;
+import me.alek.packetlibrary.api.event.impl.inject.PlayerInjectEvent;
 import me.alek.packetlibrary.api.event.impl.packet.PacketPlayReceiveEvent;
 import me.alek.packetlibrary.api.event.impl.packet.PacketStatusReceiveEvent;
 import me.alek.packetlibrary.api.event.impl.packet.PacketStatusSendEvent;

@@ -24,7 +24,7 @@ public class CommonChannelInjector {
         PacketLibrary.get().callSyncEvent(event, false);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            injectPlayer(player, type);
+            injectPlayer(player, type, true);
         }
     }
 
@@ -50,11 +50,11 @@ public class CommonChannelInjector {
             return handler;
         }
         else {
-            return injectPlayer(Bukkit.getPlayer(uuid), injectType);
+            return injectPlayer(Bukkit.getPlayer(uuid), injectType, true);
         }
     }
 
-    public static PlayerChannelDuplexHandler injectPlayer(Player player, InjectEvent.InjectType injectType) {
+    public static PlayerChannelDuplexHandler injectPlayer(Player player, InjectEvent.InjectType injectType, boolean reallyInject) {
         if (injectedPlayers.contains(player.getUniqueId())) {
             return getHandler(NMSUtils.getChannel(player), true);
         }
@@ -62,15 +62,20 @@ public class CommonChannelInjector {
 
         final Channel channel = NMSUtils.getChannel(player);
         final PlayerInjectEvent event;
-        final PlayerChannelDuplexHandler handler;
+
+        PlayerChannelDuplexHandler handler = null;
         if (channel == null) {
             event = new PlayerInjectEvent(player, injectType, InjectEvent.InjectCallback.ERROR);
-            handler = null;
         }
         else {
             event = new PlayerInjectEvent(player, injectType, InjectEvent.InjectCallback.SUCCESS);
-            handler = new PlayerChannelDuplexHandler(player);
-            injectPipeline(handler, channel);
+            if (reallyInject) {
+                handler = new PlayerChannelDuplexHandler(player);
+                injectPipeline(handler, channel);
+            }
+            else {
+                handler = getHandler(channel, true);
+            }
         }
         PacketLibrary.get().callSyncEvent(event, false);
         return handler;
@@ -91,9 +96,12 @@ public class CommonChannelInjector {
             event = new PlayerEjectEvent(player, injectType, InjectEvent.InjectCallback.SUCCESS);
 
             final ChannelPipeline pipeline = channel.pipeline();
-            channel.eventLoop().execute(() -> {
-                pipeline.remove(PacketLibrary.get().getHandlerName());
-            });
+            if (pipeline.get(PacketLibrary.get().getHandlerName()) != null) {
+
+                channel.eventLoop().execute(() -> {
+                    pipeline.remove(PacketLibrary.get().getHandlerName());
+                });
+            }
         }
         PacketLibrary.get().callSyncEvent(event, false);
     }

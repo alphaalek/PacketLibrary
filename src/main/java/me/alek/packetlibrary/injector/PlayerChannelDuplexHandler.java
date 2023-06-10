@@ -28,12 +28,6 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
 
     public void setPlayer(final Player player) {
         this.player = player;
-
-        if (PacketLibrary.get().useLateInjection()) {
-            return;
-        }
-        PlayerInjectEvent event = new PlayerInjectEvent(player, InjectEvent.InjectType.EARLY, InjectEvent.InjectCallback.SUCCESS);
-        PacketLibrary.get().callSyncEvent(event, false);
     }
 
     @Override

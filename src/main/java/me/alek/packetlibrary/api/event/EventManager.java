@@ -4,6 +4,7 @@ import me.alek.packetlibrary.api.event.impl.inject.InjectEvent;
 import me.alek.packetlibrary.api.event.impl.packet.*;
 import me.alek.packetlibrary.packet.type.PacketBound;
 import me.alek.packetlibrary.packet.type.PacketState;
+import org.bukkit.Bukkit;
 import org.bukkit.event.Cancellable;
 
 import java.lang.reflect.Method;
@@ -79,10 +80,10 @@ public class EventManager {
     }
 
     public void callListeners(Event event, boolean isPacket) {
-        if (!packetEvents.containsKey(event.getClass())) {
+        List<EventExecutor> executors = (isPacket) ? packetEvents.get(event.getClass()) : injectEvents.get(event.getClass());
+        if (executors == null) {
             return;
         }
-        List<EventExecutor> executors = (isPacket) ? packetEvents.get(event.getClass()) : injectEvents.get(event.getClass());
         for (EventExecutor executor : executors) {
             executor.call(event);
         }

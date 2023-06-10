@@ -10,7 +10,7 @@ public interface NettyChannelProxy {
 
     void eject();
 
-    void injectPlayer(Player player);
+    void injectPlayer(Player player, boolean reallyInject);
 
     void ejectPlayer(Player player);
 
