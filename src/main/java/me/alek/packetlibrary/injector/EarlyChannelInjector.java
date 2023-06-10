@@ -47,7 +47,6 @@ public class EarlyChannelInjector implements NettyChannelProxy {
             protected void initChannel(Channel channel) {
                 try {
                     synchronized (networkManagers) {
-                        Bukkit.broadcastMessage("init channel");
                         channel.eventLoop().submit(() -> CommonChannelInjector.injectChannel(channel, InjectEvent.InjectType.EARLY));
                     }
                 } catch (Exception ex) {
@@ -71,7 +70,6 @@ public class EarlyChannelInjector implements NettyChannelProxy {
                 if (NMSUtils.isFakeChannel((Channel) msg)) {
                     return;
                 }
-                Bukkit.getLogger().info("injecting");
                 Channel channel = (Channel) msg;
                 channel.pipeline().addFirst(beginInitProtocol);
                 ctx.fireChannelRead(msg);
@@ -87,7 +85,6 @@ public class EarlyChannelInjector implements NettyChannelProxy {
 
         try {
             FieldAccessor<Object> field = Reflection.getParameterizedField(serverConnectionClass, List.class, networkManagerClass);
-            Bukkit.broadcastMessage(field + "");
             networkManagers = (List<Object>) field.get(serverConnection);
         } catch (Exception ex) {
             CommonChannelInjector.inject(InjectEvent.InjectCallback.ERROR, InjectEvent.InjectType.EARLY, InjectEvent.InjectBound.SERVER);
@@ -103,7 +100,6 @@ public class EarlyChannelInjector implements NettyChannelProxy {
                     break;
                 }
                 Channel serverChannel = ((ChannelFuture) item).channel();
-                Bukkit.getLogger().info("server channel: " + serverChannel);
 
                 serverChannels.add(serverChannel);
                 serverChannel.pipeline().addFirst(serverChannelHandler);

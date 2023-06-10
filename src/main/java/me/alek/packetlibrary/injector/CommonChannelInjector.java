@@ -37,9 +37,6 @@ public class CommonChannelInjector {
                 pipeline.remove(PacketLibrary.get().getHandlerName());
             });
         }
-        if (pipeline.get("packet_handler") == null) {
-            return;
-        }
         channel.eventLoop().execute(() -> {
             pipeline.addBefore("packet_handler", handlerName, handler);
         });
@@ -47,7 +44,6 @@ public class CommonChannelInjector {
 
     public static PlayerChannelDuplexHandler injectChannel(Channel channel, InjectEvent.InjectType injectType) {
         Player player = Bukkit.getPlayer(NMSUtils.getUUIDForChannel(channel));
-        Bukkit.broadcastMessage(player + "");
         if (player == null) {
             final PlayerChannelDuplexHandler handler = new PlayerChannelDuplexHandler();
             injectPipeline(handler, channel);

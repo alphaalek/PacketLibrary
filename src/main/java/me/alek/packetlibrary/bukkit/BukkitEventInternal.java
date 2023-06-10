@@ -29,5 +29,6 @@ public class BukkitEventInternal implements Listener {
         Player player = event.getPlayer();
 
         PacketLibrary.get().getProxy().ejectPlayer(player);
+        NMSUtils.removeChannelLookup(player.getUniqueId());
     }
 }

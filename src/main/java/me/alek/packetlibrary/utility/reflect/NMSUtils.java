@@ -37,6 +37,10 @@ public class NMSUtils {
         return null;
     }
 
+    public static void removeChannelLookup(UUID uuid) {
+        lookupChannels.remove(uuid);
+    }
+
     public static Object getEntityPlayer(Player player) {
         return getHandle.invoke(player);
     }
