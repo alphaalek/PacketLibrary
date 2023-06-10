@@ -62,54 +62,23 @@ public class NMSUtils {
     }
 
     public static Class<?> getEntityPlayerClass() {
-        if (NEW_PROTOCOL) {
-            return Reflection.getClass("{nms}.server.level.EntityPlayer");
-        }
-        else {
-            return Reflection.getClass("{nms}.EntityPlayer");
-        }
-        // Reflection.getFuzzyClass("{nms}.EntityPlayer", "{nms}.server.level.EntityPlayer");
+        return Reflection.getFuzzyClass("{nms}.EntityPlayer", "{nms}.server.level.EntityPlayer");
     }
 
     public static Class<?> getPlayerConnectionClass() {
-        if (NEW_PROTOCOL) {
-            return Reflection.getClass("{nms}.server.network.PlayerConnection");
-        }
-        else {
-            return Reflection.getClass("{nms}.PlayerConnection");
-        }
-        // Reflection.getFuzzyClass("{nms}.PlayerConnection", "{nms}.server.network.PlayerConnection");
+        return Reflection.getFuzzyClass("{nms}.PlayerConnection", "{nms}.server.network.PlayerConnection");
     }
 
     public static Class<?> getNetworkManagerClass() {
-        if (NEW_PROTOCOL) {
-            return Reflection.getClass("{nms}.network.NetworkManager");
-        }
-        else {
-            return Reflection.getClass("{nms}.NetworkManager");
-        }
-        // Reflection.getFuzzyClass("{nms}.NetworkManager", "{nms}.network.NetworkManager");
+        return Reflection.getFuzzyClass("{nms}.NetworkManager", "{nms}.network.NetworkManager");
     }
 
     public static Class<?> getMinecraftServerClass() {
-        if (NEW_PROTOCOL) {
-            return Reflection.getClass("{nms}.server.MinecraftServer");
-        }
-        else {
-            return Reflection.getClass("{nms}.MinecraftServer");
-        }
-
-        // Reflection.getFuzzyClass("{nms}.MinecraftServer", "{nms}.server.MinecraftServer");
+        return Reflection.getFuzzyClass("{nms}.MinecraftServer", "{nms}.server.MinecraftServer");
     }
 
     public static Class<?> getServerConnectionClass() {
-        if (NEW_PROTOCOL) {
-            return Reflection.getClass("{nms}.server.network.ServerConnection");
-        }
-        else {
-            return Reflection.getClass("{nms}.ServerConnection");
-        }
-        // Reflection.getFuzzyClass("{nms}.ServerConnection", "{nms}.server.network.ServerConnection");
+        return Reflection.getFuzzyClass("{nms}.ServerConnection", "{nms}.server.network.ServerConnection");
     }
 
     public static boolean isFakeChannel(Channel channel) {

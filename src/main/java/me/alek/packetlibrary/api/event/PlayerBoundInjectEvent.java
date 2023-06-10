@@ -1,6 +1,6 @@
 package me.alek.packetlibrary.api.event;
 
-import me.alek.packetlibrary.api.event.InjectEvent;
+import me.alek.packetlibrary.api.event.impl.inject.InjectEvent;
 import org.bukkit.entity.Player;
 
 public class PlayerBoundInjectEvent extends InjectEvent {

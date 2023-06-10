@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 import me.alek.packetlibrary.PacketLibrary;
-import me.alek.packetlibrary.api.event.InjectEvent;
+import me.alek.packetlibrary.api.event.impl.inject.InjectEvent;
 import me.alek.packetlibrary.api.event.impl.inject.PlayerEjectEvent;
 import me.alek.packetlibrary.api.event.impl.inject.PlayerInjectEvent;
 import me.alek.packetlibrary.utility.reflect.NMSUtils;
@@ -21,7 +21,7 @@ public class CommonChannelInjector {
 
     public static void inject(InjectEvent.InjectCallback callback, InjectEvent.InjectType type, InjectEvent.InjectBound bound) {
         final InjectEvent event = new InjectEvent(type, callback, bound);
-        PacketLibrary.get().callSyncEvent(event);
+        PacketLibrary.get().callSyncEvent(event, false);
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             injectPlayer(player, type);
@@ -43,20 +43,20 @@ public class CommonChannelInjector {
     }
 
     public static PlayerChannelDuplexHandler injectChannel(Channel channel, InjectEvent.InjectType injectType) {
-        Player player = Bukkit.getPlayer(NMSUtils.getUUIDForChannel(channel));
-        if (player == null) {
+        UUID uuid = NMSUtils.getUUIDForChannel(channel);
+        if (uuid == null || Bukkit.getPlayer(uuid) == null) {
             final PlayerChannelDuplexHandler handler = new PlayerChannelDuplexHandler();
             injectPipeline(handler, channel);
             return handler;
         }
         else {
-            return injectPlayer(player, injectType);
+            return injectPlayer(Bukkit.getPlayer(uuid), injectType);
         }
     }
 
     public static PlayerChannelDuplexHandler injectPlayer(Player player, InjectEvent.InjectType injectType) {
         if (injectedPlayers.contains(player.getUniqueId())) {
-            return getHandler(NMSUtils.getChannel(player));
+            return getHandler(NMSUtils.getChannel(player), true);
         }
         injectedPlayers.add(player.getUniqueId());
 
@@ -72,7 +72,7 @@ public class CommonChannelInjector {
             handler = new PlayerChannelDuplexHandler(player);
             injectPipeline(handler, channel);
         }
-        PacketLibrary.get().callSyncEvent(event);
+        PacketLibrary.get().callSyncEvent(event, false);
         return handler;
     }
 
@@ -95,7 +95,7 @@ public class CommonChannelInjector {
                 pipeline.remove(PacketLibrary.get().getHandlerName());
             });
         }
-        PacketLibrary.get().callSyncEvent(event);
+        PacketLibrary.get().callSyncEvent(event, false);
     }
 
     public static boolean hasInjected(Player player) {
@@ -143,17 +143,27 @@ public class CommonChannelInjector {
         pipeline.context("encoder").fireChannelRead(rawPacket);
     }
 
-    public static PlayerChannelDuplexHandler getHandler(Channel channel) {
+    public static PlayerChannelDuplexHandler getHandler(Channel channel, boolean recursiveLimit) {
         ChannelPipeline pipeline = channel.pipeline();
         if (pipeline.get(PacketLibrary.get().getHandlerName()) == null) {
+            if (recursiveLimit) {
+                return null;
+            }
             return CommonChannelInjector.injectChannel(channel, InjectEvent.InjectType.LATE);
         }
         else {
             ChannelHandler channelHandler = pipeline.get(PacketLibrary.get().getHandlerName());
             if (!(channelHandler instanceof PlayerChannelDuplexHandler)) {
+                if (recursiveLimit) {
+                    return null;
+                }
                 return CommonChannelInjector.injectChannel(channel, InjectEvent.InjectType.LATE);
             }
             return (PlayerChannelDuplexHandler) channelHandler;
         }
+    }
+
+    public static PlayerChannelDuplexHandler getHandler(Channel channel) {
+        return getHandler(channel, false);
     }
 }

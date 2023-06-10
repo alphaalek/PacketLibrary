@@ -12,7 +12,7 @@ import org.bukkit.Bukkit;
 
 import java.util.function.Function;
 
-public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements PacketContainer<WP> {
+public final class InternalPacketContainer<WP extends WrappedPacket<WP>> implements PacketContainer<WP> {
 
     public static Function<Object, PacketContainer<? extends WrappedPacket<?>>> SIMPLE_CONTAINER = (packet) -> {
         return new InternalPacketContainer<>(null, null, null, null, packet);
@@ -22,6 +22,7 @@ public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements Pa
     private final WP wrappedPacket;
     private final Runnable postAction;
     private final PacketStructure<Object> packetStructure;
+    private boolean cancelled = false;
 
     public InternalPacketContainer(
             Object rawPacket,
@@ -69,6 +70,16 @@ public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements Pa
     @Override
     public Object getHandle() {
         return handle;
+    }
+
+    @Override
+    public boolean isCancelled() {
+        return cancelled;
+    }
+
+    @Override
+    public void cancel() {
+        this.cancelled = true;
     }
 
     @Override

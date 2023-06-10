@@ -5,9 +5,12 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import me.alek.packetlibrary.PacketLibrary;
+import me.alek.packetlibrary.api.event.impl.inject.InjectEvent;
+import me.alek.packetlibrary.api.event.impl.inject.PlayerInjectEvent;
 import me.alek.packetlibrary.api.packet.PacketProcessor;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
@@ -25,6 +28,12 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
 
     public void setPlayer(final Player player) {
         this.player = player;
+
+        if (PacketLibrary.get().useLateInjection()) {
+            return;
+        }
+        PlayerInjectEvent event = new PlayerInjectEvent(player, InjectEvent.InjectType.EARLY, InjectEvent.InjectCallback.SUCCESS);
+        PacketLibrary.get().callSyncEvent(event, false);
     }
 
     @Override
@@ -32,6 +41,10 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
         PacketContainer<? extends WrappedPacket<?>> packetContainer = packetProcessor.read(ctx.channel(), player, packet);
 
         if (packetContainer == null) {
+            packetProcessor.errorListeners(player, packet.getClass(), true);
+            return;
+        }
+        if (packetContainer.isCancelled()) {
             return;
         }
         super.channelRead(ctx, packetContainer.getHandle());
@@ -46,6 +59,10 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
         }
         PacketContainer<? extends WrappedPacket<?>> packetContainer = packetProcessor.write(ctx.channel(), player, packet);
         if (packetContainer == null) {
+            packetProcessor.errorListeners(player, packet.getClass(), false);
+            return;
+        }
+        if (packetContainer.isCancelled()) {
             return;
         }
         if (packetContainer.getPost() != null) {

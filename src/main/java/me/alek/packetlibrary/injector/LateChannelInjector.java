@@ -1,19 +1,9 @@
 package me.alek.packetlibrary.injector;
 
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelPipeline;
-import me.alek.packetlibrary.PacketLibrary;
 import me.alek.packetlibrary.api.NettyChannelProxy;
-import me.alek.packetlibrary.api.event.InjectEvent;
-import me.alek.packetlibrary.api.event.impl.inject.PlayerEjectEvent;
-import me.alek.packetlibrary.api.event.impl.inject.PlayerInjectEvent;
-import me.alek.packetlibrary.utility.reflect.NMSUtils;
+import me.alek.packetlibrary.api.event.impl.inject.InjectEvent;
 import org.bukkit.entity.Player;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
 public class LateChannelInjector implements NettyChannelProxy {
 

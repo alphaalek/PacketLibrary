@@ -4,6 +4,7 @@ import me.alek.packetlibrary.PacketLibrary;
 import me.alek.packetlibrary.PluginTest;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.listener.FuzzyPacketAdapter;
+import me.alek.packetlibrary.packet.type.PacketBound;
 import me.alek.packetlibrary.packet.type.PacketType;
 import me.alek.packetlibrary.utility.protocol.Protocol;
 import org.bukkit.Bukkit;
@@ -17,12 +18,17 @@ public class FloodModule extends FuzzyPacketAdapter {
 
     @Override
     public void onPacketReceive(Player player, PacketContainer packetContainer) {
-        Bukkit.getLogger().info("read: " + packetContainer.getType() + "");
+        //Bukkit.getLogger().info("read: " + packetContainer.getType() + "");
     }
 
     @Override
     public void onPacketSend(Player player, PacketContainer packetContainer) {
-        Bukkit.getLogger().info("write: " + packetContainer.getType() + "");
+        //Bukkit.getLogger().info("write: " + packetContainer.getType() + "");
+    }
+
+    @Override
+    public void onPacketCancel(Player player, PacketContainer packetContainer, PacketBound packetBound) {
+        Bukkit.getLogger().info("PACKET CANCELLED: " + player + " " + packetContainer.getHandle());
     }
 
 }

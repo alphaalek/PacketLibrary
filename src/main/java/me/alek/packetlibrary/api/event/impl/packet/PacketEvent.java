@@ -1,17 +1,16 @@
-package me.alek.packetlibrary.api.event;
+package me.alek.packetlibrary.api.event.impl.packet;
 
+import me.alek.packetlibrary.api.event.Event;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
+import org.bukkit.event.Cancellable;
 
-public class PacketEvent extends Event {
-
-    private static final HandlerList handlerList = new HandlerList();
+public abstract class PacketEvent extends Event implements Cancellable {
 
     private final Player player;
     private final PacketContainer<? extends WrappedPacket<?>> packet;
+    private boolean cancelled;
 
     public PacketEvent(Player player, PacketContainer<? extends WrappedPacket<?>> packet) {
         this.player = player;
@@ -26,12 +25,14 @@ public class PacketEvent extends Event {
         return packet;
     }
 
+
     @Override
-    public HandlerList getHandlers() {
-        return handlerList;
+    public boolean isCancelled() {
+        return cancelled;
     }
 
-    public static HandlerList getHandlerList() {
-        return handlerList;
+    @Override
+    public void setCancelled(boolean b) {
+        this.cancelled = b;
     }
 }

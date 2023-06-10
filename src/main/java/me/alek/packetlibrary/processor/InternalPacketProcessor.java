@@ -3,7 +3,7 @@ package me.alek.packetlibrary.processor;
 import io.netty.channel.Channel;
 import me.alek.packetlibrary.PacketLibrary;
 import me.alek.packetlibrary.api.event.EventManager;
-import me.alek.packetlibrary.api.event.PacketEvent;
+import me.alek.packetlibrary.api.event.impl.packet.PacketEvent;
 import me.alek.packetlibrary.api.event.impl.packet.*;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
 import me.alek.packetlibrary.api.packet.PacketProcessor;
@@ -42,6 +42,22 @@ public class InternalPacketProcessor implements PacketProcessor {
                 else {
                     packetAdapter.onPacketSend(player, (PacketContainer<WP>) packetContainer);
                 }
+            }
+        }
+
+        public void cancel(Player player, PacketContainer<?> packetContainer, boolean isRead) {
+            final PacketBound bound = (isRead) ? PacketBound.CLIENT : PacketBound.SERVER;
+
+            for (AsyncPacketAdapter<WP> packetAdapter : packetAdapters) {
+                packetAdapter.onPacketCancel(player, (PacketContainer<WP>) packetContainer, bound);
+            }
+        }
+
+        public void error(Player player, PacketTypeEnum packetType, boolean isRead) {
+            final PacketBound bound = (isRead) ? PacketBound.CLIENT : PacketBound.SERVER;
+
+            for (AsyncPacketAdapter<WP> packetAdapter : packetAdapters) {
+                packetAdapter.onPacketError(player, packetType, bound);
             }
         }
 
@@ -98,14 +114,14 @@ public class InternalPacketProcessor implements PacketProcessor {
 
     public boolean hasListener(PacketTypeEnum... packetTypes) {
         for (PacketTypeEnum packetType : packetTypes) {
-            if (!hasListener(packetType.getNmsClass())) {
+            if (!hasListeners(packetType.getNmsClass())) {
                 return false;
             }
         }
         return true;
     }
 
-    public boolean hasListener(Class<?> clazz) {
+    public boolean hasListeners(Class<?> clazz) {
         if (!PACKET_ADAPTERS.containsKey(clazz)) {
             return false;
         }
@@ -113,10 +129,24 @@ public class InternalPacketProcessor implements PacketProcessor {
     }
 
     public void callListeners(Player player, Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead) {
-        if (!hasListener(clazz)) {
+        if (!hasListeners(clazz)) {
             return;
         }
         PACKET_ADAPTERS.get(clazz).call(player, packetContainer, isRead);
+    }
+
+    public void errorListeners(Player player, Class<?> clazz, boolean isRead) {
+        if (!hasListeners(clazz)) {
+            return;
+        }
+        PACKET_ADAPTERS.get(clazz).error(player, PacketType.getPacketType(clazz), isRead);
+    }
+
+    public void cancelListeners(Player player, Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead) {
+        if (!hasListeners(clazz)) {
+            return;
+        }
+        PACKET_ADAPTERS.get(clazz).cancel(player, packetContainer, isRead);
     }
 
     @Override
@@ -134,7 +164,7 @@ public class InternalPacketProcessor implements PacketProcessor {
             return InternalPacketContainer.SIMPLE_CONTAINER.apply(packet);
         }
         final boolean hasAdapters = hasListener(PacketType.getPacketType(packet.getClass()));
-        final boolean hasListeners = EVENT_MANAGER.hasHandlers(EVENT_MANAGER.getEventFor(packetState, packetBound));
+        final boolean hasListeners = EVENT_MANAGER.hasHandlers(EVENT_MANAGER.getPacketEventFor(packetState, packetBound), true);
 
         if (!hasAdapters && !hasListeners) {
             return InternalPacketContainer.SIMPLE_CONTAINER.apply(packet);
@@ -147,8 +177,8 @@ public class InternalPacketProcessor implements PacketProcessor {
         if (hasAdapters) {
             callListeners(player, packet.getClass(), packetContainer, packetBound == PacketBound.CLIENT);
         }
+        AtomicReference<PacketEvent> packetEvent = new AtomicReference<>();
         if (hasListeners) {
-            AtomicReference<PacketEvent> packetEvent = new AtomicReference<>();
             switch (packetBound) {
 
                 case CLIENT: {
@@ -174,6 +204,7 @@ public class InternalPacketProcessor implements PacketProcessor {
                             break;
                         }
                     }
+                    break;
                 }
                 case SERVER: {
                     switch (getPacketState(player, packet)) {
@@ -193,11 +224,31 @@ public class InternalPacketProcessor implements PacketProcessor {
                             break;
                         }
                     }
+                    break;
                 }
             }
             final PacketEvent event = packetEvent.get();
             if (event != null) {
-                PacketLibrary.get().callSyncEvent(event);
+                PacketLibrary.get().callSyncEvent(event, true);
+                if (packetContainer.isCancelled()) {
+                    event.setCancelled(true);
+                }
+            }
+        }
+        final PacketEvent event = packetEvent.get();
+        boolean calledCancelled = false;
+        if (hasAdapters) {
+            if (packetContainer.isCancelled()) {
+                cancelListeners(player, packet.getClass(), packetContainer, packetBound == PacketBound.CLIENT);
+                calledCancelled = true;
+            }
+        }
+        if (event != null) {
+            if (event.isCancelled()) {
+                packetContainer.cancel();
+                if (hasAdapters && !calledCancelled) {
+                    cancelListeners(player, packet.getClass(), packetContainer, packetBound == PacketBound.CLIENT);
+                }
             }
         }
         return packetContainer;

@@ -1,11 +1,8 @@
-package me.alek.packetlibrary.api.event;
+package me.alek.packetlibrary.api.event.impl.inject;
 
 import me.alek.packetlibrary.PacketLibrary;
-import me.alek.packetlibrary.api.event.impl.packet.PacketLoginReceiveEvent;
+import me.alek.packetlibrary.api.event.Event;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.HandlerList;
 
 public class InjectEvent extends Event {
 
@@ -23,8 +20,6 @@ public class InjectEvent extends Event {
         SUCCESS,
         ERROR;
     }
-
-    private static final HandlerList handlers = new HandlerList();
 
     private final InjectType injectType;
     private final InjectCallback injectCallback;
@@ -55,14 +50,5 @@ public class InjectEvent extends Event {
 
     public InjectBound getBound() {
         return injectBound;
-    }
-
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
     }
 }

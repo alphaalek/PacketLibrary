@@ -1,5 +1,6 @@
 package me.alek.packetlibrary;
 
+import me.alek.packetlibrary.api.event.Event;
 import me.alek.packetlibrary.api.event.EventManager;
 import me.alek.packetlibrary.api.packet.PacketProcessor;
 import me.alek.packetlibrary.bukkit.BukkitEventInternal;
@@ -17,7 +18,6 @@ import me.alek.packetlibrary.utility.protocol.Protocol;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
@@ -47,6 +47,7 @@ public class PacketLibrary {
         INSTANCE = this;
         this.settings = settings;
         this.plugin = settings.getPlugin();
+        eventManager = new EventManager();
         Bukkit.getServer().getPluginManager().registerEvents(new BukkitEventInternal(), PluginTest.get());
 
         if (settings.useLateInjection()) {
@@ -56,16 +57,16 @@ public class PacketLibrary {
             proxy = new EarlyChannelInjector();
         }
         proxy.inject();
-        eventManager = new EventManager();
         internalPacketProcessor = new InternalPacketProcessor(eventManager);
 
         future = PacketType.load();
         future.andThen(PacketWrapperFactory.load());
     }
 
-    public void callSyncEvent(Event event) {
-        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(event));
+    public void callSyncEvent(Event event, boolean isPacket) {
+        eventManager.callListeners(event, isPacket);
     }
+
 
     public void setLateProxy() {
         if (proxy instanceof EarlyChannelInjector) {

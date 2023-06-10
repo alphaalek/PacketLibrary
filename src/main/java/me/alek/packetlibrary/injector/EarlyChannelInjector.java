@@ -2,11 +2,10 @@ package me.alek.packetlibrary.injector;
 
 import io.netty.channel.*;
 import me.alek.packetlibrary.api.NettyChannelProxy;
-import me.alek.packetlibrary.api.event.InjectEvent;
+import me.alek.packetlibrary.api.event.impl.inject.InjectEvent;
 import me.alek.packetlibrary.utility.reflect.FieldAccessor;
 import me.alek.packetlibrary.utility.reflect.NMSUtils;
 import me.alek.packetlibrary.utility.reflect.Reflection;
-import net.minecraft.server.v1_8_R3.MinecraftServer;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 

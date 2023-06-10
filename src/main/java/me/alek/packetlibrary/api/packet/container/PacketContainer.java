@@ -16,4 +16,8 @@ public interface PacketContainer<WP extends WrappedPacket<WP>> extends Modifiabl
 
     Object getHandle();
 
+    boolean isCancelled();
+
+    void cancel();
+
 }

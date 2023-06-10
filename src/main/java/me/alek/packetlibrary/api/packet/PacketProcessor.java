@@ -25,6 +25,8 @@ public interface PacketProcessor {
 
     void callListeners(Player player, Class<?> clazz, PacketContainer<?> packetContainer, boolean isRead);
 
+    void errorListeners(Player player, Class<?> clazz, boolean isRead);
+
     void setPostAction(PacketTypeEnum packetType, Runnable postAction);
 
     void postRead();
