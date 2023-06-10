@@ -15,20 +15,30 @@ import java.util.function.Function;
 public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements PacketContainer<WP> {
 
     public static Function<Object, PacketContainer<? extends WrappedPacket<?>>> SIMPLE_CONTAINER = (packet) -> {
-        return new InternalPacketContainer<>(null, null, null, packet);
+        return new InternalPacketContainer<>(null, null, null, null, packet);
     };
     private final PacketTypeEnum type;
     private final Object handle;
     private final WP wrappedPacket;
+    private final Runnable postAction;
     private final PacketStructure<Object> packetStructure;
 
     public InternalPacketContainer(
             Object rawPacket,
             PacketTypeEnum type
     ) {
+        this(rawPacket, null, type);
+    }
+
+    public InternalPacketContainer(
+            Object rawPacket,
+            Runnable postAction,
+            PacketTypeEnum type
+    ) {
         this.wrappedPacket = (WP) PacketWrapperCache.getWrapper(type, rawPacket, this);
         this.packetStructure = PacketStructureCache.getStructure(type);
         this.type = type;
+        this.postAction = postAction;
         this.handle = rawPacket;
     }
 
@@ -36,10 +46,12 @@ public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements Pa
         PacketStructure<Object> packetStructure,
         WP wrappedPacket,
         PacketTypeEnum type,
+        Runnable postAction,
         Object rawPacket
     ) {
         this.wrappedPacket = wrappedPacket;
         this.packetStructure = packetStructure;
+        this.postAction = postAction;
         this.type = type;
         this.handle = rawPacket;
     }
@@ -57,6 +69,11 @@ public class InternalPacketContainer<WP extends WrappedPacket<WP>> implements Pa
     @Override
     public Object getHandle() {
         return handle;
+    }
+
+    @Override
+    public Runnable getPost() {
+        return postAction;
     }
 
     @Override

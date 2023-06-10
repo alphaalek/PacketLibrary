@@ -1,7 +1,7 @@
 package me.alek.packetlibrary.api.event;
 
 import me.alek.packetlibrary.PluginTest;
-import me.alek.packetlibrary.api.event.impl.*;
+import me.alek.packetlibrary.api.event.impl.packet.*;
 import me.alek.packetlibrary.packet.type.PacketBound;
 import me.alek.packetlibrary.packet.type.PacketState;
 import org.bukkit.Bukkit;

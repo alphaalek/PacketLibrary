@@ -20,13 +20,22 @@ public class NMSUtils {
     private static final Class<?> networkManagerClass = getNetworkManagerClass();
     private static final MethodInvoker getHandle = Reflection.getMethod(craftPlayerClass, "getHandle", entityPlayerClass);
     private static final FieldAccessor<Object> playerConnection = Reflection.getField(
-            entityPlayerClass, getPlayerConnectionFieldName(), playerConnectionClass);
+            entityPlayerClass, 0, playerConnectionClass);
     private static final FieldAccessor<Object> networkManager = Reflection.getField(
-            playerConnectionClass, getNetworkManagerName(), networkManagerClass);
+            playerConnectionClass, 0, networkManagerClass);
     private static final FieldAccessor<Channel> channel = Reflection.getField(
-            networkManagerClass, getChannelName(), Channel.class);
+            networkManagerClass, 0, Channel.class);
 
     private static final HashMap<UUID, Channel> lookupChannels = new HashMap<>();
+
+    public static UUID getUUIDForChannel(Channel channel) {
+        for (UUID uuid : lookupChannels.keySet()) {
+            if (lookupChannels.get(uuid) == channel) {
+                return uuid;
+            }
+        }
+        return null;
+    }
 
     public static Object getEntityPlayer(Player player) {
         return getHandle.invoke(player);
@@ -48,33 +57,6 @@ public class NMSUtils {
         return lookupChannels.get(player.getUniqueId());
     }
 
-    public static String getPlayerConnectionFieldName() {
-        if (NEW_PROTOCOL) {
-            return "b";
-        }
-        else {
-            return "playerConnection";
-        }
-    }
-
-    public static String getNetworkManagerName() {
-        if (NEW_PROTOCOL) {
-            return "a";
-        }
-        else {
-            return "networkManager";
-        }
-    }
-
-    public static String getChannelName() {
-        if (NEW_PROTOCOL) {
-            return "k";
-        }
-        else {
-            return "channel";
-        }
-    }
-
     public static Class<?> getEntityPlayerClass() {
         if (NEW_PROTOCOL) {
             return Reflection.getClass("{nms}.server.level.EntityPlayer");
@@ -82,6 +64,7 @@ public class NMSUtils {
         else {
             return Reflection.getClass("{nms}.EntityPlayer");
         }
+        // Reflection.getFuzzyClass("{nms}.EntityPlayer", "{nms}.server.level.EntityPlayer");
     }
 
     public static Class<?> getPlayerConnectionClass() {
@@ -91,6 +74,7 @@ public class NMSUtils {
         else {
             return Reflection.getClass("{nms}.PlayerConnection");
         }
+        // Reflection.getFuzzyClass("{nms}.PlayerConnection", "{nms}.server.network.PlayerConnection");
     }
 
     public static Class<?> getNetworkManagerClass() {
@@ -100,5 +84,34 @@ public class NMSUtils {
         else {
             return Reflection.getClass("{nms}.NetworkManager");
         }
+        // Reflection.getFuzzyClass("{nms}.NetworkManager", "{nms}.network.NetworkManager");
+    }
+
+    public static Class<?> getMinecraftServerClass() {
+        if (NEW_PROTOCOL) {
+            return Reflection.getClass("{nms}.server.MinecraftServer");
+        }
+        else {
+            return Reflection.getClass("{nms}.MinecraftServer");
+        }
+
+        // Reflection.getFuzzyClass("{nms}.MinecraftServer", "{nms}.server.MinecraftServer");
+    }
+
+    public static Class<?> getServerConnectionClass() {
+        if (NEW_PROTOCOL) {
+            return Reflection.getClass("{nms}.server.network.ServerConnection");
+        }
+        else {
+            return Reflection.getClass("{nms}.ServerConnection");
+        }
+        // Reflection.getFuzzyClass("{nms}.ServerConnection", "{nms}.server.network.ServerConnection");
+    }
+
+    public static boolean isFakeChannel(Channel channel) {
+        if (channel == null) {
+            return true;
+        }
+        return channel.getClass().getSimpleName().equals("FakeChannel") || channel.getClass().getSimpleName().equals("SpoofedChannel");
     }
 }

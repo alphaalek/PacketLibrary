@@ -5,7 +5,7 @@ import me.alek.packetlibrary.api.packet.PacketProcessor;
 import me.alek.packetlibrary.bukkit.BukkitEventInternal;
 import me.alek.packetlibrary.injector.EarlyChannelInjector;
 import me.alek.packetlibrary.injector.LateChannelInjector;
-import me.alek.packetlibrary.api.NettyInjector;
+import me.alek.packetlibrary.api.NettyChannelProxy;
 import me.alek.packetlibrary.listener.AsyncPacketAdapter;
 import me.alek.packetlibrary.listener.FuzzyPacketAdapter;
 import me.alek.packetlibrary.packet.type.PacketType;
@@ -16,6 +16,9 @@ import me.alek.packetlibrary.utility.AsyncFuture;
 import me.alek.packetlibrary.utility.protocol.Protocol;
 import me.alek.packetlibrary.wrappers.WrappedPacket;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -23,10 +26,11 @@ import java.util.function.Supplier;
 public class PacketLibrary {
 
     private final PacketLibrarySettings settings;
-    private final NettyInjector injector;
     private final PacketProcessor internalPacketProcessor;
     private final EventManager eventManager;
     private final AsyncFuture future;
+    private final JavaPlugin plugin;
+    private NettyChannelProxy proxy;
 
     private static PacketLibrary INSTANCE;
 
@@ -35,20 +39,23 @@ public class PacketLibrary {
     }
 
     public static PacketLibrary set(PacketLibrarySettings settings) {
-        INSTANCE = new PacketLibrary(settings);
+        new PacketLibrary(settings);
         return INSTANCE;
     }
 
     private PacketLibrary(PacketLibrarySettings settings) {
+        INSTANCE = this;
         this.settings = settings;
+        this.plugin = settings.getPlugin();
         Bukkit.getServer().getPluginManager().registerEvents(new BukkitEventInternal(), PluginTest.get());
 
         if (settings.useLateInjection()) {
-            injector = new LateChannelInjector();
+            proxy = new LateChannelInjector();
         }
         else {
-            injector = new EarlyChannelInjector();
+            proxy = new EarlyChannelInjector();
         }
+        proxy.inject();
         eventManager = new EventManager();
         internalPacketProcessor = new InternalPacketProcessor(eventManager);
 
@@ -56,12 +63,25 @@ public class PacketLibrary {
         future.andThen(PacketWrapperFactory.load());
     }
 
+    public void callSyncEvent(Event event) {
+        Bukkit.getScheduler().runTask(plugin, () -> Bukkit.getPluginManager().callEvent(event));
+    }
+
+    public void setLateProxy() {
+        if (proxy instanceof EarlyChannelInjector) {
+            proxy.eject();
+            proxy = new LateChannelInjector();
+            proxy.inject();
+        }
+        settings.setUseLateInjection(true);
+    }
+
     public EventManager getEventManager() {
         return eventManager;
     }
 
-    public NettyInjector getInjector() {
-        return injector;
+    public NettyChannelProxy getProxy() {
+        return proxy;
     }
 
     public boolean useLateInjection() {
@@ -70,6 +90,10 @@ public class PacketLibrary {
 
     public Protocol getFallbackProtocol() {
         return settings.getFallbackProtocol();
+    }
+
+    public String getHandlerName() {
+        return settings.getHandlerName();
     }
 
     public PacketLibrarySettings getSettings() {
@@ -88,6 +112,15 @@ public class PacketLibrary {
         future.addListener(runnable);
     }
 
+
+    public void sendPacket(Player player, WrappedPacket<?> packet) {
+        proxy.writePacket(player, packet);
+    }
+
+    public void flushPackets(Player player) {
+        proxy.flushPackets(player);
+    }
+
     public <WP extends WrappedPacket<WP>> void addListener(AsyncPacketAdapter<WP> adapter, Supplier<PacketTypeEnum> packetTypes) {
         addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
     }
@@ -98,6 +131,14 @@ public class PacketLibrary {
 
     public void addFuzzyListeners(FuzzyPacketAdapter adapter, Supplier<List<PacketTypeEnum>> packetTypes) {
         addListener(() -> internalPacketProcessor.addListener(adapter, packetTypes.get()));
+    }
+
+    public void setPostAction(PacketTypeEnum packetType, Runnable postAction) {
+        internalPacketProcessor.setPostAction(packetType, postAction);
+    }
+
+    public void disable() {
+        proxy.eject();
     }
 
 

@@ -12,9 +12,14 @@ public class PluginTest extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
-        packetLibrary = PacketLibrary.set(new PacketLibrarySettings());
+        packetLibrary = PacketLibrary.set(new PacketLibrarySettings(this, "alek_packets"));
         new PositionModule();
         new FloodModule();
+    }
+
+    @Override
+    public void onDisable() {
+        PacketLibrary.get().disable();
     }
 
     public static PluginTest get() {

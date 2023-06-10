@@ -12,6 +12,8 @@ public interface PacketContainer<WP extends WrappedPacket<WP>> extends Modifiabl
 
     WP getPacket();
 
+    Runnable getPost();
+
     Object getHandle();
 
 }

@@ -1,11 +1,11 @@
 package me.alek.packetlibrary.utility.reflect;
 
+import com.avaje.ebeaninternal.api.BindParams;
 import me.alek.packetlibrary.utility.protocol.Protocol;
 import org.bukkit.Bukkit;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -87,13 +87,22 @@ public class Reflection {
         return getCanonicalClass(setPlaceholders(name));
     }
 
+    public static Class<?> getFuzzyClass(String... names) {
+        for (String name : names) {
+            try {
+                return getClassWithException(name);
+            } catch (Exception ex) {
+            }
+        }
+        throw new RuntimeException("Reflection fejl " + names);
+    }
+
     public static Class<?> getCanonicalClassWithException(String name) throws Exception {
         return Class.forName(name);
     }
 
     public static Class<?> getCanonicalClass(String name) {
         try {
-            Bukkit.getLogger().info("CLASS: " + name);
             return getCanonicalClassWithException(name);
         } catch (Exception ex) {
             throw new RuntimeException("Reflection fejl " + name);
@@ -187,6 +196,39 @@ public class Reflection {
             return getField(target.getSuperclass(), name, type);
         }
         throw new RuntimeException("Reflection fejl " + name);
+    }
+
+    public static <T> FieldAccessor<T> getField(Class<?> target, int index, Class<?> type) {
+        int currentIndex = 0;
+        for (Field field : target.getDeclaredFields()) {
+            if (field.getType() == type) {
+                if (currentIndex == index) {
+                    field.setAccessible(true);
+                    return new FieldAccessor<>(field);
+                }
+                currentIndex++;
+            }
+        }
+        if (target.getSuperclass() != null) {
+            return getField(target.getSuperclass(), index, type);
+        }
+        throw new RuntimeException("Reflection fejl " + index);
+    }
+
+    public static <T> FieldAccessor<T> getParameterizedField(Class<?> target, Class<?> bound, Class<?>... generic) {
+        for (Field field : target.getDeclaredFields()) {
+            Type fieldType = field.getGenericType();
+
+            if (fieldType instanceof ParameterizedType) {
+                ParameterizedType parameterizedType = (ParameterizedType) fieldType;
+
+                if (Arrays.equals(generic, parameterizedType.getActualTypeArguments())) {
+                    field.setAccessible(true);
+                    return new FieldAccessor<>(field);
+                }
+            }
+        }
+        throw new RuntimeException("Reflection fejl " + bound);
     }
 
     public static String getVersion() {

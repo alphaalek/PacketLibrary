@@ -1,4 +1,4 @@
-package me.alek.packetlibrary.handler;
+package me.alek.packetlibrary.injector;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
@@ -35,6 +35,7 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
             return;
         }
         super.channelRead(ctx, packetContainer.getHandle());
+        packetProcessor.postRead();
     }
 
     @Override
@@ -44,10 +45,15 @@ public class PlayerChannelDuplexHandler extends ChannelDuplexHandler {
             return;
         }
         PacketContainer<? extends WrappedPacket<?>> packetContainer = packetProcessor.write(ctx.channel(), player, packet);
-
         if (packetContainer == null) {
             return;
         }
+        if (packetContainer.getPost() != null) {
+            promise.addListener((f) -> {
+                packetContainer.getPost().run();
+            });
+        }
         super.write(ctx, packetContainer.getHandle(), promise);
+        packetProcessor.postWrite();
     }
 }

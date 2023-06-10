@@ -1,9 +1,8 @@
 package me.alek.packetlibrary.api.example;
 
 import me.alek.packetlibrary.PacketLibrary;
-import me.alek.packetlibrary.PluginTest;
-import me.alek.packetlibrary.api.event.impl.PacketStatusReceiveEvent;
-import me.alek.packetlibrary.api.event.impl.PacketStatusSendEvent;
+import me.alek.packetlibrary.api.event.impl.packet.PacketStatusReceiveEvent;
+import me.alek.packetlibrary.api.event.impl.packet.PacketStatusSendEvent;
 import me.alek.packetlibrary.packet.type.PacketType;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
