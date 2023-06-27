@@ -1,6 +1,5 @@
 package me.alek.packetlibrary.utility.reflect;
 
-import com.avaje.ebeaninternal.api.BindParams;
 import me.alek.packetlibrary.utility.protocol.Protocol;
 import org.bukkit.Bukkit;
 
@@ -12,23 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Reflection {
-
-    public static class ConstructorInvoker<T> {
-
-        private final Constructor<T> constructor;
-
-        public ConstructorInvoker(Constructor<T> constructor) {
-            this.constructor = constructor;
-        }
-
-        public T invoke(Object... parameters) {
-            try {
-                return constructor.newInstance(parameters);
-            } catch (Exception ex) {
-                throw new RuntimeException("Reflection fejl");
-            }
-        }
-    }
 
     static {
         String OBC = Bukkit.getServer().getClass().getPackage().getName();
@@ -75,16 +57,32 @@ public class Reflection {
         throw new RuntimeException("Reflection fejl " + name);
     }
 
-    public static Class<?> getSubClass(String superClass, String name) {
-        return getSubClass(getClass(superClass), name);
+    public static Class<Object> getSubClass(String superClass, String name) {
+        return (Class<Object>) getSubClass(getClass(superClass), name);
     }
 
     public static Class<?> getClassWithException(String name) throws Exception {
         return getCanonicalClassWithException(setPlaceholders(name));
     }
 
+    public static Class<Object> getObjectClassWithException(String name) throws Exception {
+        return (Class<Object>) getClassWithException(name);
+    }
+
     public static Class<?> getClass(String name) {
         return getCanonicalClass(setPlaceholders(name));
+    }
+
+    public static Class<Object> getObjectClass(String name) {
+        return (Class<Object>) getClass(name);
+    }
+
+    public static Class<?> getArrayClass(String name) {
+        return getClass("[L" + name + ";");
+    }
+
+    public static Class<Object[]> getArrayObjectClass(String name) {
+        return (Class<Object[]>) getClass("[" + name + ";");
     }
 
     public static Class<?> getFuzzyClass(String... names) {
@@ -95,6 +93,10 @@ public class Reflection {
             }
         }
         throw new RuntimeException("Reflection fejl " + names);
+    }
+
+    public static Class<Object> getFuzzyObjectClass(String... names) {
+        return (Class<Object>) getFuzzyClass(names);
     }
 
     public static Class<?> getCanonicalClassWithException(String name) throws Exception {
@@ -150,29 +152,62 @@ public class Reflection {
         return output.toString();
     }
 
-    public static <T> ConstructorInvoker<T> getConstructor(Class<T> target, Class<?>... parameters) {
+    public static ConstructorInvoker<Object> getConstructor(Class<?> target, Class<?>... parameters) {
         try {
-            return new ConstructorInvoker<>(target.getConstructor(parameters));
+            return (ConstructorInvoker<Object>) new ConstructorInvoker<>(target.getConstructor(parameters));
         } catch (Exception ex) {
             throw new RuntimeException("Reflection fejl");
         }
     }
 
-    public static MethodInvoker getMethod(Method method) {
-        return new MethodInvoker(method);
+    public static MethodInvoker<?> getMethod(Method method) {
+        return new MethodInvoker<>(method);
     }
 
-    public static MethodInvoker getMethod(String target, String name, Class<?>... parameters) {
+    public static MethodInvoker<?> getMethod(String target, String name, Class<?>... parameters) {
         return getMethod(getClass(target), name, parameters);
     }
 
-    public static MethodInvoker getMethod(Class<?> target, String name, Class<?>... parameters) {
+    public static MethodInvoker<?> getMethodFromParameters(Class<?> target, int index, Class<?>... parameters) {
+        int currentIndex = -1;
+
+        for (Method method : target.getDeclaredMethods()) {
+            if (Arrays.equals(method.getParameterTypes(), parameters)) {
+
+                if (currentIndex++ == index) {
+                    return new MethodInvoker<>(method);
+                }
+            }
+        }
+        if (target.getSuperclass() != null) {
+            return getMethodFromParameters(target.getSuperclass(), index, parameters);
+        }
+        throw new RuntimeException("Reflection fejl " + index + " " + target.getName());
+    }
+
+    public static MethodInvoker<?> getMethodFromReturnType(Class<?> target, int index, Class<?> returnType) {
+        int currentIndex = 0;
+        for (Method method : target.getDeclaredMethods()) {
+
+            if (method.getReturnType() == returnType) {
+                if (currentIndex == index) {
+                    return new MethodInvoker<>(method);
+                }
+                currentIndex++;
+            }
+        }
+        if (target.getSuperclass() != null) {
+            return getMethodFromReturnType(target.getSuperclass(), index, returnType);
+        }
+        throw new RuntimeException("Reflection fejl " + index + " " + target.getName() + " " + returnType);
+    }
+
+    public static MethodInvoker<?> getMethod(Class<?> target, String name, Class<?>... parameters) {
         for (Method method : target.getDeclaredMethods()) {
             if (!method.getName().equals(name) || method.getParameterTypes() == parameters) {
                 continue;
             }
-            method.setAccessible(true);
-            return new MethodInvoker(method);
+            return new MethodInvoker<>(method);
         }
         if (target.getSuperclass() != null) {
             return getMethod(target.getSuperclass(), name, parameters);
@@ -201,9 +236,9 @@ public class Reflection {
     public static <T> FieldAccessor<T> getField(Class<?> target, int index, Class<?> type) {
         int currentIndex = 0;
         for (Field field : target.getDeclaredFields()) {
+
             if (field.getType() == type) {
                 if (currentIndex == index) {
-                    field.setAccessible(true);
                     return new FieldAccessor<>(field);
                 }
                 currentIndex++;
@@ -229,6 +264,24 @@ public class Reflection {
             }
         }
         throw new RuntimeException("Reflection fejl " + bound);
+    }
+
+    public static Enum<?> getEnumAtIndex(Class<Enum<?>> enumClass, int ordinal) {
+        for (Enum<?> enumValue : enumClass.getEnumConstants()) {
+            if (enumValue.ordinal() ==ordinal) {
+                return enumValue;
+            }
+        }
+        throw new RuntimeException("Reflection fejl " + ordinal);
+    }
+
+    public static Enum<?> getEnumForName(Class<Enum<?>> enumClass, String name) {
+        for (Enum<?> enumValue : enumClass.getEnumConstants()) {
+            if (enumValue.name().equals(name)) {
+                return enumValue;
+            }
+        }
+        throw new RuntimeException("Reflection fejl " + name);
     }
 
     public static String getVersion() {

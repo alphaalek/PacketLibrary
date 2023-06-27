@@ -1,4 +1,4 @@
 name: PacketLibrary
-main: me.alek.packetlibrary.PluginTest
+main: me.alek.honey.netty.PluginTest
 version: 1.0.0
 author: Alek05

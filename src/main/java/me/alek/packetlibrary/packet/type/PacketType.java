@@ -1,14 +1,12 @@
 package me.alek.packetlibrary.packet.type;
 
 import me.alek.packetlibrary.utility.AsyncFuture;
-import me.alek.packetlibrary.utility.reflect.Reflection;
 import me.alek.packetlibrary.utility.protocol.Protocol;
 import me.alek.packetlibrary.utility.protocol.ProtocolRange;
-import net.minecraft.server.v1_8_R3.PacketPlayOutSpawnEntityWeather;
+import me.alek.packetlibrary.utility.reflect.Reflection;
 import org.bukkit.Bukkit;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class PacketType {
 
@@ -34,7 +32,6 @@ public class PacketType {
     private static final Protocol PROTOCOL_VERSION = Protocol.getProtocol();
     private static final Map<Class<?>, PacketDetails> PACKET_DETAILS = new IdentityHashMap<>();
     private static final Map<PacketState, List<PacketTypeEnum>> PACKET_STATE_TYPE = new HashMap<>();
-    private static final Map<Protocol, Map<PacketState, List<PacketTypeEnum>>> TYPES_AVAILABLE_CACHE = new ConcurrentHashMap<>();
 
     public static AsyncFuture load() {
         AsyncFuture future = new AsyncFuture();
@@ -76,26 +73,23 @@ public class PacketType {
         if (state == PacketState.UNKNOWN) {
             return new ArrayList<>();
         }
-        final Map<PacketState, List<PacketTypeEnum>> stateMap = TYPES_AVAILABLE_CACHE.computeIfAbsent(protocol, protocolVersion -> new ConcurrentHashMap<>());
-        return stateMap.computeIfAbsent(state, packetState -> {
-            final ArrayList<PacketTypeEnum> packetTypes = new ArrayList<>();
-            for (PacketTypeEnum packetType : PACKET_STATE_TYPE.get(packetState)) {
+        final ArrayList<PacketTypeEnum> packetTypes = new ArrayList<>();
+        for (PacketTypeEnum packetType : PACKET_STATE_TYPE.get(state)) {
 
-                if (packetBound != null) {
-                    if (packetType.getBound() != packetBound) {
-                        continue;
-                    }
+            if (packetBound != null) {
+                if (packetType.getBound() != packetBound) {
+                    continue;
                 }
-                if (packetType instanceof RangedPacketTypeEnum) {
-                    RangedPacketTypeEnum rangedPacketType = (RangedPacketTypeEnum) packetType;
-                    if (!Protocol.protocolMatch(rangedPacketType, protocol)) {
-                        continue;
-                    }
-                }
-                packetTypes.add(packetType);
             }
-            return packetTypes;
-        });
+            if (packetType instanceof RangedPacketTypeEnum) {
+                RangedPacketTypeEnum rangedPacketType = (RangedPacketTypeEnum) packetType;
+                if (!Protocol.protocolMatch(rangedPacketType, protocol)) {
+                    continue;
+                }
+            }
+            packetTypes.add(packetType);
+        }
+        return packetTypes;
     }
 
 

@@ -2,7 +2,7 @@ package me.alek.packetlibrary.utility.reflect;
 
 import java.lang.reflect.Field;
 
-public class FieldAccessor<T> {
+public class FieldAccessor<T> implements ReflectToucher<T> {
 
     private final Field field;
 
@@ -23,8 +23,14 @@ public class FieldAccessor<T> {
         }
     }
 
+    @Override
     public Class<T> getType() {
         return (Class<T>) field.getType();
+    }
+
+    @Override
+    public String getName() {
+        return field.getName();
     }
 
     public void set(Object object, T value) {

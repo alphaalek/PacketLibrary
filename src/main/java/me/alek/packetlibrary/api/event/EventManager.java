@@ -2,10 +2,9 @@ package me.alek.packetlibrary.api.event;
 
 import me.alek.packetlibrary.api.event.impl.inject.InjectEvent;
 import me.alek.packetlibrary.api.event.impl.packet.*;
+import me.alek.packetlibrary.netty.api.event.impl.packet.*;
 import me.alek.packetlibrary.packet.type.PacketBound;
 import me.alek.packetlibrary.packet.type.PacketState;
-import org.bukkit.Bukkit;
-import org.bukkit.event.Cancellable;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;

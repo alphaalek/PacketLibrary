@@ -1,10 +1,7 @@
 package me.alek.packetlibrary.utility;
 
-import org.bukkit.Bukkit;
-
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class AsyncFuture {
 

@@ -1,26 +1,49 @@
 package me.alek.packetlibrary.api.packet.container;
 
-import me.alek.packetlibrary.api.packet.PacketModifier;
-import me.alek.packetlibrary.api.packet.PacketStructure;
+import me.alek.packetlibrary.modelwrappers.WrappedBlockPosition;
+import me.alek.packetlibrary.api.packet.IStructureModifier;
+import org.bukkit.inventory.ItemStack;
+
+import java.util.UUID;
 
 public interface ModifiablePacketContainer{
 
-    PacketModifier<Double> getDoubles();
+    IStructureModifier<Double> getDoubles();
 
-    PacketModifier<Long> getLongs();
+    IStructureModifier<Long> getLongs();
 
-    PacketModifier<Integer> getInts();
+    IStructureModifier<Integer> getInts();
 
-    PacketModifier<Short> getShorts();
+    IStructureModifier<Short> getShorts();
 
-    PacketModifier<Float> getFloats();
+    IStructureModifier<Float> getFloats();
 
-    PacketModifier<Byte> getBytes();
+    IStructureModifier<Byte> getBytes();
 
-    PacketModifier<Boolean> getBooleans();
+    IStructureModifier<Boolean> getBooleans();
 
-    PacketModifier<String> getStrings();
+    IStructureModifier<String> getStrings();
 
-    PacketModifier<Object> getObjects(Class<?> target);
+    IStructureModifier<Object> getObjects();
+
+    IStructureModifier<UUID> getUUIDS();
+
+    IStructureModifier<String[]> getStringArrays();
+
+    IStructureModifier<long[]> getLongArrays();
+
+    IStructureModifier<int[]> getIntArrays();
+
+    IStructureModifier<short[]> getShortArrays();
+
+    IStructureModifier<byte[]> getByteArrays();
+
+    IStructureModifier<ItemStack> getItems();
+
+    IStructureModifier<Object> getDataSerializers();
+
+    IStructureModifier<WrappedBlockPosition> getBlockPositions();
+
+    <T> IStructureModifier<T> getObjects(Class<T> target);
 
 }

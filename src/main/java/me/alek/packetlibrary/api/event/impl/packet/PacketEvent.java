@@ -2,7 +2,7 @@ package me.alek.packetlibrary.api.event.impl.packet;
 
 import me.alek.packetlibrary.api.event.Event;
 import me.alek.packetlibrary.api.packet.container.PacketContainer;
-import me.alek.packetlibrary.wrappers.WrappedPacket;
+import me.alek.packetlibrary.packetwrappers.WrappedPacket;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 

@@ -1,8 +1,7 @@
 package me.alek.packetlibrary.bukkit;
 
-import me.alek.packetlibrary.PacketLibrary;
-import me.alek.packetlibrary.injector.PlayerChannelDuplexHandler;
 import me.alek.packetlibrary.utility.reflect.NMSUtils;
+import me.alek.packetlibrary.PacketLibrary;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

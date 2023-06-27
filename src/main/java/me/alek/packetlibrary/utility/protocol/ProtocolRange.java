@@ -1,7 +1,5 @@
 package me.alek.packetlibrary.utility.protocol;
 
-import org.bukkit.Bukkit;
-
 public class ProtocolRange {
 
     public static final ProtocolRange ALL = ProtocolRange.since(Protocol.getOldest());
